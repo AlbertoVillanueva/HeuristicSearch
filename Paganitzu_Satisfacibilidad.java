@@ -15,7 +15,7 @@ public class Paganitzu_Satisfacibilidad {
 		FileReader fileReader = new FileReader(args[0]);
 		BufferedReader bufferedReader = new BufferedReader(fileReader);
 		String line;
-		int filas = 0, columnas;
+		int filas = 0, columnas = 0;;
 		int nHuecos = 0;
 		Store store = new Store();
 		SatWrapper satWrapper = new SatWrapper(); 
@@ -23,23 +23,28 @@ public class Paganitzu_Satisfacibilidad {
 
 		while((line = bufferedReader.readLine()) != null) {
 			for(int columna = 0; columna < line.length();columna++){
+				columnas = columna;
 				if(line.charAt(columna) == ' '){
 					nHuecos++;
 				}
 			}
+			filas++;
 		}
 		bufferedReader.close();
 		fileReader.close();
 		fileReader = new FileReader(args[0]);
 		bufferedReader = new BufferedReader(fileReader);
 		posicion_t huecos[] = new posicion_t[nHuecos];
+		char mapa[][] = new char [filas][columnas+1];
 		nHuecos = 0;
+		filas = 0;
 		while((line = bufferedReader.readLine()) != null) {
 			for(int columna = 0; columna < (line.length());columna++){
 				if(line.charAt(columna) == ' '){
 					huecos[nHuecos] = new posicion_t(filas, columna);
 					nHuecos++;
 				}
+				mapa[filas][columna] = line.charAt(columna);
 			}
 			filas++;
 		}
@@ -48,12 +53,12 @@ public class Paganitzu_Satisfacibilidad {
 		// 1. DECLARACION DE VARIABLES
 		BooleanVar Al[] = new BooleanVar[nHuecos];
 		for(int j = 0; j<nHuecos;j++){
-			Al[j] = new BooleanVar(store, "\n Al esta en hueco "+j);
+			Al[j] = new BooleanVar(store, ""+j);
 		}
 		BooleanVar Serpientes[][] = new BooleanVar[Integer.parseInt(args[1])][nHuecos];
 		for(int i = 0; i<Integer.parseInt(args[1]);i++){
 			for(int j = 0; j<nHuecos;j++){
-				Serpientes[i][j] = new BooleanVar(store, "\n Serpiente "+i+" esta en hueco "+j);
+				Serpientes[i][j] = new BooleanVar(store, ""+j);
 			}
 		}
 		// Se registran las variables
@@ -152,26 +157,45 @@ public class Paganitzu_Satisfacibilidad {
 		Search<BooleanVar> search = new DepthFirstSearch<BooleanVar>();
 		SelectChoicePoint<BooleanVar> select = new SimpleSelect<BooleanVar>(allVariables,new SmallestDomain<BooleanVar>(), new IndomainMin<BooleanVar>());
 		Boolean result = search.labeling(store, select);
-
+		int numHueco =0;
+		FileWriter laberinto = new FileWriter ("laberinto_res.txt");
 		if (result) {
 			System.out.println("Solution: ");
 			for (int h = 0; h < Al.length; h++) {
 				if(Al[h].value() == 1){
 					System.out.println(Al[h].id());
+					numHueco = Integer.parseInt(Al[h].id());
+					mapa[huecos[numHueco].fila][huecos[numHueco].columna] = 'A';
 				}	
 			}
 			for (int n = 0; n < Serpientes.length; n++) {
 				for (int h = 0; h < Serpientes[n].length; h++) {
 					if(Serpientes[n][h].value() == 1){
 						System.out.println(Serpientes[n][h].id());
+						numHueco = Integer.parseInt(Al[h].id());
+						mapa[huecos[numHueco].fila][huecos[numHueco].columna] = 'S';
 					}
 				}
 			}
+			for (int i = 0; i < mapa.length; i++){
+				for (int j = 0; j < mapa[i].length; j++){
+					System.out.print(mapa[i][j]);
+				}						
+				System.out.println();
+			}
+
+			for (int i = 0; i < mapa.length; i++){
+				for (int j = 0; j < mapa[i].length; j++){
+					laberinto.write(mapa[i][j]);
+				}						
+				laberinto.write("\r\n");
+			}
+			laberinto.close();
 
 		} else{
 			System.out.println("*** No solution");
 		}
-
+		
 		System.out.println();
 	}
 	public static void addClause(SatWrapper satWrapper, int literal1, int literal2){
