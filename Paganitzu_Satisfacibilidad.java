@@ -35,7 +35,7 @@ public class Paganitzu_Satisfacibilidad {
 		posicion_t huecos[] = new posicion_t[nHuecos];
 		nHuecos = 0;
 		while((line = bufferedReader.readLine()) != null) {
-			for(int columna = 0; columna < line.length();columna++){
+			for(int columna = 0; columna < (line.length());columna++){
 				if(line.charAt(columna) == ' '){
 					huecos[nHuecos] = new posicion_t(filas, columna);
 					nHuecos++;
@@ -81,23 +81,111 @@ public class Paganitzu_Satisfacibilidad {
 		}
 		// 2. DECLARACION DE LITERALES
 		int AlLiterales[] = new int[nHuecos];
-		int SerpientesLiterales[][] = new int[Integer.parseInt(args[1]][nHuecos];
+		int SerpientesLiterales[][] = new int[Integer.parseInt(args[1])][nHuecos];
 		for(int j = 0; j<nHuecos;j++){
 			AlLiterales[j] = satWrapper.cpVarToBoolVar(Al[j], 1, true);
 		}
 		for(int i = 0; i<Integer.parseInt(args[1]);i++){
 			for(int j = 0; j<nHuecos;j++){
-				int SerpientesLiterales[i][j] = satWrapper.cpVarToBoolVar(Serpientes[i][j], 1, true);
+				SerpientesLiterales[i][j] = satWrapper.cpVarToBoolVar(Serpientes[i][j], 1, true);
 			}
 		}
 
 		// 3. RESTRICCIONES
+
+		//1 hueco por personaje
+		for(int i = 0; i<AlLiterales.length; i++){
+			for(int j = 0; j<AlLiterales.length; j++){
+				if(huecos[i].fila != huecos[j].fila || huecos[i].columna != huecos[j].columna){
+					addClause(satWrapper, -AlLiterales[i], -AlLiterales[j]);
+				}
+			}
+		}
+		//1 hueco por serpiente
+		for(int i = 0; i<SerpientesLiterales.length; i++){
+			for(int j = 0; j<SerpientesLiterales[i].length; j++){
+				for(int l = 0; l<SerpientesLiterales[i].length; l++){
+					if(huecos[j].fila != huecos[l].fila || huecos[j].columna != huecos[l].columna){
+						addClause(satWrapper, -SerpientesLiterales[i][j], -SerpientesLiterales[i][l]);
+					}
+				}
+			}
+		}
+		//1 serpiente por fila
+		for(int n = 0; n<SerpientesLiterales.length; n++){
+			for(int j = 0; j<SerpientesLiterales[n].length; j++){
+				for(int m = 0; m<SerpientesLiterales.length; m++){
+					if(n!=m ){
+						for(int l = 0; l<SerpientesLiterales[m].length; l++){
+							if(huecos[j].fila == huecos[l].fila){
+								addClause(satWrapper, -SerpientesLiterales[n][j], -SerpientesLiterales[m][l]);
+							}
+						}
+					}
+				}
+			}
+		}
+		//columna S != columna A
+		//fila S != fila A
+		for (int a = 0; a < AlLiterales.length; a++) {
+			for(int n = 0; n<SerpientesLiterales.length; n++){
+				for(int s = 0; s<SerpientesLiterales[n].length; s++){
+					//columna S != columna A
+					if(huecos[s].columna == huecos[a].columna){
+						addClause(satWrapper, -AlLiterales[a], -SerpientesLiterales[n][s]);
+					}
+					//fila S != fila A
+					if(huecos[s].fila == huecos[a].fila){
+						addClause(satWrapper, -AlLiterales[a], -SerpientesLiterales[n][s]);
+					}
+				}
+			}
+		}
+		//hay un personaje
+		addOrMultiple(satWrapper, AlLiterales);
+		//hay n serpientes
+		for(int n = 0; n<SerpientesLiterales.length; n++){
+			addOrMultiple(satWrapper, SerpientesLiterales[n]);
+		}
+		// 4. INVOCAR AL SOLUCIONADOR
+		
+		Search<BooleanVar> search = new DepthFirstSearch<BooleanVar>();
+		SelectChoicePoint<BooleanVar> select = new SimpleSelect<BooleanVar>(allVariables,new SmallestDomain<BooleanVar>(), new IndomainMin<BooleanVar>());
+		Boolean result = search.labeling(store, select);
+
+		if (result) {
+			System.out.println("Solution: ");
+			for (int h = 0; h < Al.length; h++) {
+				if(Al[h].value() == 1){
+					System.out.println(Al[h].id());
+				}	
+			}
+			for (int n = 0; n < Serpientes.length; n++) {
+				for (int h = 0; h < Serpientes[n].length; h++) {
+					if(Serpientes[n][h].value() == 1){
+						System.out.println(Serpientes[n][h].id());
+					}
+				}
+			}
+
+		} else{
+			System.out.println("*** No solution");
+		}
+
+		System.out.println();
 	}
 	public static void addClause(SatWrapper satWrapper, int literal1, int literal2){
-
+		IntVec clause = new IntVec(satWrapper.pool);
+		clause.add(literal1);
+		clause.add(literal2);
+		satWrapper.addModelClause(clause.toArray());
 	}
-	public static void implicacionMultiple(int implicador, int[] implicados){
-
+	public static void addOrMultiple(SatWrapper satWrapper, int[] array){
+		IntVec clause = new IntVec(satWrapper.pool);
+		for(int i = 0; i<array.length;i++){
+			clause.add(array[i]);
+		}
+		satWrapper.addModelClause(clause.toArray());
 	}
 }
 class posicion_t{
