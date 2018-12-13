@@ -179,6 +179,11 @@ def insertarOrdenado(lista, nodo):
 			lista.insert(primero+1,nodo)
 
 def backtracking(N):
+	path = []
+	nodo = N
+	while nodo.padre != None:
+		path.append(nodo.padre)
+	return path
 def esSitioPeligroso(nuevaPos):
 def hayLlave(pos):
 	if pos in LLAVES:
