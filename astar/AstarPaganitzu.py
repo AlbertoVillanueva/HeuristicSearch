@@ -184,8 +184,19 @@ def backtracking(N):
 	while nodo.padre != None:
 		path.append(nodo.padre)
 	return path
-def esSitioPeligroso(nuevaPos):
-def hayLlave(pos):
+def esSitioPeligroso(pos):
+	i = pos[1]-1
+	while (pos[0],i) not in MUROS:
+		i-=1
+	if (pos[0],i) in SERPIENTES:
+		return True
+	i = pos[1]+1
+	while (pos[0],i) not in MUROS:
+		i+=1
+	if (pos[0],i) in SERPIENTES:
+		return True
+	return False
+def hayLlave(pos, estado):
 	if pos in LLAVES:
 		return not estado.llaves[LLAVES.index(pos)]):
 	return False
