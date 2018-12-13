@@ -26,42 +26,6 @@ class node():
 			if self.estado.al == l[i].estado.al and self.estado.llaves == l[i].estado.llaves and sorted(self.estado.rocas) == sorted(l[i].estado.rocas):
 				return True, i
 		return False, None
-
-
-MUROS=[]
-LLAVES = []
-SERPIENTES = []
-salida = (None,None)
-rocas = []
-al = (None,None)
-'''
-f = open('lab_astar/lab1.map','r')
-archivo = f.read()
-f.close()
-'''
-archivo='%%%%%%%%%%\n%    %%% %\n% O   K  E\n%A      %%\n%%%%%%%%%%\n'
-archivo = archivo.split('\n')
-for i in range(len(archivo)):
-	fila = []
-	for j in range(len(archivo[i])):
-		if archivo[i][j] == 'A':
-			al = (i,j)
-		if archivo[i][j] == 'E':
-			salida = (i,j)
-		if archivo[i][j] == 'O':
-			rocas.append((i,j)) 
-		if archivo[i][j] == 'K':
-			LLAVES.append((i,j))
-		if archivo[i][j] == 'S':
-			SERPIENTES.append((i,j))
-		fila.append(True) if archivo[i][j] == '%' or archivo[i][j] == 'E' or archivo[i][j] == 'S' else fila.append(False)
-	MUROS.append(fila)
-print("MUROS:")
-[print(m) for m in MUROS]
-print("LLAVES:",LLAVES)
-print("SERPIENTES:",SERPIENTES)
-print("SALDIA:",salida)
-I = node(None, 0, state(al, rocas, [False]*len(LLAVES)))
 def astar():
 	ABIERTA = [I,]
 	CERRADA = []
@@ -163,4 +127,39 @@ def hayLlave(pos, estado):
 		return not estado.llaves[LLAVES.index(pos)]
 	return False
 
+
+MUROS=[]
+LLAVES = []
+SERPIENTES = []
+salida = (None,None)
+rocas = []
+al = (None,None)
+'''
+f = open('lab_astar/lab1.map','r')
+archivo = f.read()
+f.close()
+'''
+archivo='%%%%%%%%%%\n%    %%% %\n% O   K  E\n%A      %%\n%%%%%%%%%%\n'
+archivo = archivo.split('\n')
+for i in range(len(archivo)):
+	fila = []
+	for j in range(len(archivo[i])):
+		if archivo[i][j] == 'A':
+			al = (i,j)
+		if archivo[i][j] == 'E':
+			salida = (i,j)
+		if archivo[i][j] == 'O':
+			rocas.append((i,j)) 
+		if archivo[i][j] == 'K':
+			LLAVES.append((i,j))
+		if archivo[i][j] == 'S':
+			SERPIENTES.append((i,j))
+		fila.append(True) if archivo[i][j] == '%' or archivo[i][j] == 'E' or archivo[i][j] == 'S' else fila.append(False)
+	MUROS.append(fila)
+print("MUROS:")
+[print(m) for m in MUROS]
+print("LLAVES:",LLAVES)
+print("SERPIENTES:",SERPIENTES)
+print("SALDIA:",salida)
+I = node(None, 0, state(al, rocas, [False]*len(LLAVES)))
 astar()
