@@ -1,4 +1,4 @@
-class estado():
+class state():
 	al = None
 	rocas = None
 	llaves = None
@@ -7,19 +7,26 @@ class estado():
 		self.rocas = rocas
 		self.llaves = llaves
 class node():
-	id = None
 	padre = None
 	g = None
 	f = None
 	estado = None
-	def h(self):
-		return 1
-	def __init__(self, id, padre, c, estado):
-		self.id = id
+	def __init__(self, padre, c, estado):
 		self.padre = padre
-		self.g = padre.g+c
-		self.f = self.g + self.h()
+		if padre != None:
+			self.g = padre.g+c
+		else:
+			self.g = 0
 		self.estado = estado
+		self.f = self.g + self.h()
+	def h(self):
+		return self.estado.al != salida
+	def estaEn(self,l):
+		for i in range(len(l)):
+			if self.estado.al == l[i].estado.al and self.estado.llaves == l[i].estado.llaves and sorted(self.estado.rocas) == sorted(l[i].estado.rocas):
+				return True, i
+		return False, None
+
 
 MUROS=[]
 LLAVES = []
@@ -27,9 +34,12 @@ SERPIENTES = []
 salida = (None,None)
 rocas = []
 al = (None,None)
+'''
 f = open('lab_astar/lab1.map','r')
 archivo = f.read()
 f.close()
+'''
+archivo='%%%%%%%%%%\n%    %%% %\n% O   K  E\n%A      %%\n%%%%%%%%%%\n'
 archivo = archivo.split('\n')
 for i in range(len(archivo)):
 	fila = []
@@ -46,113 +56,62 @@ for i in range(len(archivo)):
 			SERPIENTES.append((i,j))
 		fila.append(True) if archivo[i][j] == '%' or archivo[i][j] == 'E' or archivo[i][j] == 'S' else fila.append(False)
 	MUROS.append(fila)
-id = 0
-I = node(id, None, 0, estado(al, rocas, [False]*len(LLAVES)))
+print("MUROS:")
+[print(m) for m in MUROS]
+print("LLAVES:",LLAVES)
+print("SERPIENTES:",SERPIENTES)
+print("SALDIA:",salida)
+I = node(None, 0, state(al, rocas, [False]*len(LLAVES)))
 def astar():
 	ABIERTA = [I,]
 	CERRADA = []
 	EXITO = False
-	while(ABIERTA != [] or EXITO):
-		id+=1
+	while ABIERTA != [] and not EXITO:
 		N = ABIERTA[0]
 		ABIERTA.pop(0)
 		if esFinal(N): 
 			EXITO = True
 		else:
-			S,id = genSucesores(N,id)
+			S = genSucesores(N)
+			CERRADA.append(N)
 			for s in S:
-				if s not in CERRADA:
-					insertarOrdenado(ABIERTA,s)
+				estaEnAbierta, indice = s.estaEn(ABIERTA)
+				if estaEnAbierta:
+					if s.f < ABIERTA[indice].f:
+						del ABIERTA[indice]
+						insertarOrdenado(ABIERTA,s)
+				else:
+					estaEnCerrada, indice = s.estaEn(CERRADA)
+					if not estaEnCerrada:
+						insertarOrdenado(ABIERTA,s)
 	if EXITO:
 		print(backtracking(N))	
 	else:
 		print("Fracaso")
 def esFinal(N):
 	return N.estado.al == salida
-def genSucesores(nodo, id):
+def genSucesores(nodo):
 	estado = nodo.estado
 	sucesores = []
-	#mover hacia arriba
-	nuevaPos = (estado.al[0],estado.al[1]+1)
-	if sum(estado.llaves) == len(LLAVES) and nuevaPos == salida:
-		sucesores.append(node(id ,nodo,2, estado(nuevaPos,estado.rocas,estado.llaves)))
-		id+=1
-	elif not MUROS[nuevaPos[0]][nuevaPos[1]] and esSitioPeligroso(nuevaPos):
-		if nuevaPos in estado.rocas:
-			unaMasHaciaEsaDireccionPrimo = (nuevaPos[0],nuevaPos[1]+1)
-			if not(unaMasHaciaEsaDireccionPrimo in estado.rocas or MUROS[unaMasHaciaEsaDireccionPrimo[0]][unaMasHaciaEsaDireccionPrimo[1]] or hayLlave(unaMasHaciaEsaDireccionPrimo)):
-				nuevasRocas = estado.rocas[:]
-				nuevasRocas.remove(nuevaPos)
-				nuevasRocas.append(unaMasHaciaEsaDireccionPrimo)
-				sucesores.append(node(id ,nodo, 4, estado(nuevaPos,nuevasRocas,estado.llaves)))
-				id+=1
-		else:
-			nuevasLlaves = estado.llaves[:]
-			if nuevaPos in LLAVES:
-				nuevasLlaves[LLAVES.index(nuevaPos)] = True
-			sucesores.append(node(id ,nodo, 2, estado(nuevaPos,nuevasRocas,nuevasLlaves)))
-			id+=1
-	#mover hacia abajo
-	nuevaPos = (estado.al[0],estado.al[1]-1)
-	if sum(estado.llaves) == len(LLAVES) and nuevaPos == salida:
-		sucesores.append(node(id ,nodo,2, estado(nuevaPos,estado.rocas,estado.llaves)))
-		id+=1
-	elif not MUROS[nuevaPos[0]][nuevaPos[1]] and esSitioPeligroso(nuevaPos):
-		if nuevaPos in estado.rocas:
-			unaMasHaciaEsaDireccionPrimo = (nuevaPos[0],nuevaPos[1]-1)
-			if not(unaMasHaciaEsaDireccionPrimo in estado.rocas or MUROS[unaMasHaciaEsaDireccionPrimo[0]][unaMasHaciaEsaDireccionPrimo[1]] or hayLlave(unaMasHaciaEsaDireccionPrimo)):
-				nuevasRocas = estado.rocas[:]
-				nuevasRocas.remove(nuevaPos)
-				nuevasRocas.append(unaMasHaciaEsaDireccionPrimo)
-				sucesores.append(node(id ,nodo, 4, estado(nuevaPos,nuevasRocas,estado.llaves)))
-				id+=1
-		else:
-			nuevasLlaves = estado.llaves[:]
-			if nuevaPos in LLAVES:
-				nuevasLlaves[LLAVES.index(nuevaPos)] = True
-			sucesores.append(node(id ,nodo, 2, estado(nuevaPos,nuevasRocas,nuevasLlaves)))
-			id+=1
-	#mover hacia izquierda
-	nuevaPos = (estado.al[0]-1,estado.al[1])
-	if sum(estado.llaves) == len(LLAVES) and nuevaPos == salida:
-		sucesores.append(node(id ,nodo,2, estado(nuevaPos,estado.rocas,estado.llaves)))
-		id+=1
-	elif not MUROS[nuevaPos[0]][nuevaPos[1]] and esSitioPeligroso(nuevaPos):
-		if nuevaPos in estado.rocas:
-			unaMasHaciaEsaDireccionPrimo = (nuevaPos[0]-1,nuevaPos[1])
-			if not(unaMasHaciaEsaDireccionPrimo in estado.rocas or MUROS[unaMasHaciaEsaDireccionPrimo[0]][unaMasHaciaEsaDireccionPrimo[1]] or hayLlave(unaMasHaciaEsaDireccionPrimo)):
-				nuevasRocas = estado.rocas[:]
-				nuevasRocas.remove(nuevaPos)
-				nuevasRocas.append(unaMasHaciaEsaDireccionPrimo)
-				sucesores.append(node(id ,nodo, 4, estado(nuevaPos,nuevasRocas,estado.llaves)))
-				id+=1
-		else:
-			nuevasLlaves = estado.llaves[:]
-			if nuevaPos in LLAVES:
-				nuevasLlaves[LLAVES.index(nuevaPos)] = True
-			sucesores.append(node(id ,nodo, 2, estado(nuevaPos,nuevasRocas,nuevasLlaves)))
-			id+=1
-	#mover hacia derecha
-	nuevaPos = (estado.al[0]+1,estado.al[1])
-	if sum(estado.llaves) == len(LLAVES) and nuevaPos == salida:
-		sucesores.append(node(id ,nodo,2, estado(nuevaPos,estado.rocas,estado.llaves)))
-		id+=1
-	elif not MUROS[nuevaPos[0]][nuevaPos[1]] and esSitioPeligroso(nuevaPos):
-		if nuevaPos in estado.rocas:
-			unaMasHaciaEsaDireccionPrimo = (nuevaPos[0]+1,nuevaPos[1])
-			if not(unaMasHaciaEsaDireccionPrimo in estado.rocas or MUROS[unaMasHaciaEsaDireccionPrimo[0]][unaMasHaciaEsaDireccionPrimo[1]] or hayLlave(unaMasHaciaEsaDireccionPrimo)):
-				nuevasRocas = estado.rocas[:]
-				nuevasRocas.remove(nuevaPos)
-				nuevasRocas.append(unaMasHaciaEsaDireccionPrimo)
-				sucesores.append(node(id ,nodo, 4, estado(nuevaPos,nuevasRocas,estado.llaves)))
-				id+=1
-		else:
-			nuevasLlaves = estado.llaves[:]
-			if nuevaPos in LLAVES:
-				nuevasLlaves[LLAVES.index(nuevaPos)] = True
-			sucesores.append(node(id ,nodo, 2, estado(nuevaPos,nuevasRocas,nuevasLlaves)))
-			id+=1
-	return sucesores, id
+	movimientos = [(1,0),(-1,0),(0,1),(0,-1)]
+	for m in movimientos:
+		nuevaPos = (estado.al[0]+m[0],estado.al[1]+m[1])
+		if sum(estado.llaves) == len(LLAVES) and nuevaPos == salida:
+			sucesores.append(node(nodo,2, state(nuevaPos,estado.rocas[:],estado.llaves[:])))
+		elif not MUROS[nuevaPos[0]][nuevaPos[1]] and not esSitioPeligroso(nuevaPos):
+			if nuevaPos in estado.rocas:
+				unaMasHaciaEsaDireccionPrimo = (nuevaPos[0]+m[0],nuevaPos[1]+m[1])
+				if not(unaMasHaciaEsaDireccionPrimo in estado.rocas or MUROS[unaMasHaciaEsaDireccionPrimo[0]][unaMasHaciaEsaDireccionPrimo[1]] or hayLlave(unaMasHaciaEsaDireccionPrimo,estado)):
+					nuevasRocas = estado.rocas[:]
+					nuevasRocas.remove(nuevaPos)
+					nuevasRocas.append(unaMasHaciaEsaDireccionPrimo)
+					sucesores.append(node(nodo, 4, state(nuevaPos,nuevasRocas,estado.llaves[:])))
+			else:
+				nuevasLlaves = estado.llaves[:]
+				if nuevaPos in LLAVES:
+					nuevasLlaves[LLAVES.index(nuevaPos)] = True
+				sucesores.append(node(nodo, 2, state(nuevaPos,estado.rocas[:],nuevasLlaves)))
+	return sucesores
 def insertarOrdenado(lista, nodo):
 	if not len(lista):
 		lista.append(nodo)
@@ -176,27 +135,32 @@ def insertarOrdenado(lista, nodo):
 		else:
 			while lista[primero].f == nodo.f:
 				primero-=1
+				if primero == -1:
+					break
 			lista.insert(primero+1,nodo)
 
 def backtracking(N):
 	path = []
 	nodo = N
-	while nodo.padre != None:
-		path.append(nodo.padre)
-	return path
+	while nodo != None:
+		path.append(nodo.estado.al)
+		nodo = nodo.padre
+	return path[::-1]
 def esSitioPeligroso(pos):
 	i = pos[1]-1
-	while (pos[0],i) not in MUROS:
+	while not MUROS[pos[0]][i]:
 		i-=1
 	if (pos[0],i) in SERPIENTES:
 		return True
 	i = pos[1]+1
-	while (pos[0],i) not in MUROS:
+	while not MUROS[pos[0]][i]:
 		i+=1
 	if (pos[0],i) in SERPIENTES:
 		return True
 	return False
 def hayLlave(pos, estado):
 	if pos in LLAVES:
-		return not estado.llaves[LLAVES.index(pos)]):
+		return not estado.llaves[LLAVES.index(pos)]
 	return False
+
+astar()
