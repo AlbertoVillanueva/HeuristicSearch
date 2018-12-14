@@ -159,30 +159,42 @@ def insertarOrdenado(lista, nodo):
 	   lista es una lista de node
 	   nodo es un node
 	'''
+	# si la lista esta vacia insertamos el nodo
 	if not len(lista):
 		lista.append(nodo)
 	else:
+		# Hacemos busqueda binaria hasta encontrar el valor mas cercano
+		# Empezamos buscando en toda la lista
 		primero = 0
 		ultimo = len(lista)-1
+		# Mientras no tengamos longitud 1 
 		while primero < ultimo:
+			# Calculamos la posicion media de la seccion en la que estamos
 			medio = primero+(ultimo-primero)//2
+			# Si hemos encontrado nuestro objetivo terminamos
 			if nodo.f == lista[medio].f:
 				primero=medio
 				break
+			# Si f del nodo es mas pequeño que el medio buscamos en la mitad anterior
 			elif nodo.f<lista[medio].f:
 				ultimo=medio-1
+			# Si f del nodo es mas grande que el medio buscamos en la mitad posterior
 			elif nodo.f>lista[medio].f:
 				primero=medio+1
-
+		# Si f del nodo es mas pequeño lo insertamos antes
 		if nodo.f<lista[primero].f:
 			lista.insert(primero, nodo)
+		# Si es mas grando lo insertamos despues
 		elif nodo.f>lista[primero].f:
 			lista.insert(primero+1, nodo)
+		# Si f es igual
 		else:
+			# Retrocedemos hasta el primero nodo que tenga la misma f
 			while lista[primero].f == nodo.f:
 				primero-=1
 				if primero == -1:
 					break
+			# Insertamos antes del primer nodo que es igual
 			lista.insert(primero+1,nodo)
 
 def backtracking(N):
@@ -206,14 +218,18 @@ def esSitioPeligroso(pos,estado):
 	   pos es una tupla (x,y)
 	   estado es un state
 	'''
+	# Nos movemos hacia la izquierda hasta encontrar el primer muro o roca
 	i = pos[1]-1
 	while not MUROS[pos[0]][i] and (pos[0],i) not in estado.rocas:
 		i-=1
+	# Si es una serpiente es un sitio peligroso y devolvemos True
 	if (pos[0],i) in SERPIENTES:
 		return True
 	i = pos[1]+1
+	# Nos movemos hacia la derecha hasta encontrar el primer muro o roca
 	while not MUROS[pos[0]][i] and (pos[0],i) not in estado.rocas:
 		i+=1
+	# Si es una serpiente es un sitio peligroso y devolvemos True
 	if (pos[0],i) in SERPIENTES:
 		return True
 	return False
