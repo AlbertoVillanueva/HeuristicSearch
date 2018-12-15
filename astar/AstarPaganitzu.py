@@ -1,3 +1,65 @@
+CONFIG = {
+	# ficheros
+	"crearOutput": False,
+	"crearStatistics": False,
+	# salida por pantalla
+	"imprimirOutput": True,
+	"imprimirStatistics": True,
+	# extra
+	"hayDiagonales": False,
+	# heuristicas
+	"detectarMuros": False,
+	"detectarLlavesPeligrosas": True,
+	# interfaz
+	"interfaz": True,
+	"velocidad": 0.35
+}
+
+import sys, time
+if CONFIG["interfaz"]:
+	import pygame
+	class interfaz():
+		running = True
+		imagenes = {
+				'%': pygame.image.load("images/muro.png"),
+				'A': pygame.image.load("images/al.png"),
+				'K': pygame.image.load("images/llave.png"),
+				'O': pygame.image.load("images/roca.png"),
+				'E': pygame.image.load("images/salida.png"),
+				'S': pygame.image.load("images/serpiente.png"),
+		}
+		screen = None
+		def __init__(self):
+			# initialize the pygame module
+			pygame.init()
+			# load and set the logo
+			pygame.display.set_caption("minimal program")
+			# create a surface on screen that has the size of 240 x 180
+			self.screen = pygame.display.set_mode((len(archivo[0])*32,(len(archivo))*32))
+			self.screen.fill((0,0,0))
+			for i in range(len(blueprint)):
+				for j in range(len(blueprint[i])):
+					if blueprint[i][j] != ' ':
+						self.screen.blit(self.imagenes[blueprint[i][j]], (j*32,i*32))
+			pygame.display.flip()
+		def draw(self, estado):
+			mapa = [row[:] for row in blueprint]
+			if estado.al == SALIDA:
+				pygame.draw.rect(self.screen,(0,0,0),(SALIDA[1]*32,SALIDA[0]*32,32,32))
+			self.screen.blit(self.imagenes['A'], (estado.al[1]*32,estado.al[0]*32))
+			for r in estado.rocas:
+				self.screen.blit(self.imagenes['O'], (r[1]*32,r[0]*32))
+			for k in range(len(LLAVES)):
+				if not estado.llaves[k]:
+					self.screen.blit(self.imagenes['K'], (LLAVES[k][1]*32,LLAVES[k][0]*32))
+			pygame.display.flip()
+		def vaciar(self):
+			for i in range(len(blueprint)):
+				for j in range(len(blueprint[i])):
+					if blueprint[i][j] == ' ':
+						pygame.draw.rect(self.screen,(0,0,0),(j*32,i*32,32,32))
+			pygame.display.flip()
+			
 class state():
 	'''Clase que representa un estado
 	   al es la posicion de al
@@ -23,6 +85,13 @@ class state():
 		'''
 		# Si todos los elementos del estado son iguales devuelve True, si no False
 		return self.al == estado.al and self.llaves == estado.llaves and sorted(self.rocas) == sorted(estado.rocas)
+	def quedanLlaves(self):
+		'''Devuelve True si queda alguna llave por recoger
+		'''
+		for k in self.llaves:
+			if not k:
+				return True
+		return False
 class node():
 	'''Clase que representa un estado con informacion adicional
 	   padre es un puntero al padre del que ha surgido este nodo
@@ -55,10 +124,43 @@ class node():
 		'''Devuelve el valor heuristico para el `estado`
 		'''
 		coste = 0
-		if sum(self.estado.llaves) < len(self.estado.llaves):
-			llaveLejos = max((abs(LLAVES[k][0]-self.estado.al[0])+abs(LLAVES[k][1]-self.estado.al[1]),LLAVES[k]) for k in range(len(LLAVES)) if not self.estado.llaves[k])
-			return 2*(llaveLejos[0]+ abs(llaveLejos[1][0]-salida[0])+abs(llaveLejos[1][1]-salida[1]))
-		return 2*(abs(self.estado.al[0]-salida[0])+abs(self.estado.al[1]-salida[1]))
+		# si quedan llaves añadir la distancia hasta la llave mas lejana y la distancia desde esa llave hasta la salida
+		if self.estado.quedanLlaves():
+			llaveLejos = max((self.distancia(LLAVES[k],self.estado.al),LLAVES[k]) for k in range(len(LLAVES)) if not self.estado.llaves[k])
+			coste += 2*(llaveLejos[0]+ self.distancia(llaveLejos[1],SALIDA))
+			coste += 2*(len(self.estado.llaves)-sum(self.estado.llaves)-1)
+		# si no quedan llaves añadir la distancia hasta la salida
+		else:
+			coste += 2*self.distancia(self.estado.al,SALIDA)
+		# si queremos detectar las llaves que esten en peligro
+		if CONFIG["detectarLlavesPeligrosas"]:
+			# para cada llave
+			for i in range(len(LLAVES)):
+				# si hay serpientes y aun no hemos cogido esta llave añadir el minimo coste para tapar la(s) serpiente que ponen en peligro la llave
+				if SERPIENTES != [] and not self.estado.llaves[i]:
+					hay, serpiente = haySerpienteIz(LLAVES[i],self.estado)
+					if hay:
+						coste += 2*min(self.taparSerpiente(serpiente,LLAVES[i],r) for r in self.estado.rocas)
+					hay, serpiente = haySerpienteDer(LLAVES[i],self.estado)
+					if hay:
+						coste += 2*min(self.taparSerpiente(serpiente,LLAVES[i],r) for r in self.estado.rocas)
+		return coste
+	def distancia(self, pos1, pos2):
+		'''Devuelve la distancia desde `pos1` hasta `pos2`
+		   pos1 es una tupla (x,y)
+		   pos2 es una tupla (x,y)
+		'''
+		return abs(pos1[0]-pos2[0])+abs(pos1[1]-pos2[1])
+	def taparSerpiente(self, serpiente, posicion, roca):
+		'''Devuelve la distancia que hay que mover `roca` para que tape la `serpiente` respecto a la `posicion`
+		   serpiente, posicion y roca son tuplas (x,y)
+		'''
+		huecoIz = min(serpiente[1],posicion[1])+1
+		huecoDer = max(serpiente[1],posicion[1])
+		if roca[1] in range(huecoIz,huecoDer):
+			return abs(roca[0]-serpiente[0])
+		else: 
+			return min(self.distancia(roca,(serpiente[0], huecoIz)),self.distancia(roca,(serpiente[0], huecoDer)))
 	def estaEn(self,l):
 		'''Devuelve True si el `estado` esta en la lista `l`
 		   Devuelve la posicion del estado en `l`, si `estado` no esta en `l` devuelve None
@@ -104,9 +206,43 @@ def astar():
 					# Si s no esta ni en ABIERTA ni en CERRADA se inserta en orden en ABIERTA
 					if not estaEnCerrada:
 						insertarOrdenado(ABIERTA,s)
+	END = time.time()
 	# Si exito imprimir el camino desde N hasta I
 	if EXITO:
-		print(backtracking(N))	
+		path = backtracking(N)
+		if CONFIG["crearOutput"]:
+			f = open(sys.argv[1]+".output",'w')
+			f.write(str(path[0]))
+			for p in range(1,len(path)):
+				f.write("→")
+				f.write(str(path[p]))
+			f.close()
+		tTotal = str(int((END-START)*1000)/1000)+'s'
+		if CONFIG["crearStatistics"]:
+			f = open(sys.argv[1]+".statistics",'w')
+			f.write("Tiempo total: "+tTotal+"\n")
+			f.write("Coste total: "+str(N.g)+"\n")
+			f.write("Longitud de la ruta: "+ str(len(path)-1)+"\n")
+			f.write("Nodos expandidos: "+ str(len(CERRADA)+1))
+			f.close()
+		if CONFIG["imprimirOutput"]:
+			camino = ["→"+str(path[p]) for p in range(1,len(path))] 
+			print(str(path[0])+"".join(camino))
+		if CONFIG["imprimirStatistics"]:
+			print("Tiempo total: "+tTotal)
+			print("Coste total: "+str(N.g))
+			print("Longitud de la ruta: "+ str(len(path)-1))
+			print("Nodos expandidos: "+ str(len(CERRADA)+1))
+		if CONFIG["interfaz"]:
+			animar(N)
+			# main loop
+			while ventana.running:
+				# event handling, gets all event from the eventqueue
+				for event in pygame.event.get():
+					# only do something if the event is of type QUIT
+					if event.type == pygame.QUIT:
+						# change the value to False, to exit the main loop
+						ventana.running = False
 	# Si no imprimir "Fracaso"
 	else:
 		print("Fracaso")
@@ -115,7 +251,7 @@ def esFinal(N):
 	'''Devuelve True si `N` es un estado final
 	   N es un node
 	'''
-	return N.estado.al == salida
+	return N.estado.al == SALIDA
 def genSucesores(nodo):
 	'''Devuelve una lista con los sucesores de `nodo`
 	   nodo es un node
@@ -128,8 +264,8 @@ def genSucesores(nodo):
 	for m in movimientos:
 		# Calculamos la nueva posicion para ese movimiento
 		nuevaPos = (nodo.estado.al[0]+m[0],nodo.estado.al[1]+m[1])
-		# Si tenemos todas las llaves y la nueva posicion es la salida añadimos el descendiente
-		if sum(nodo.estado.llaves) == len(LLAVES) and nuevaPos == salida:
+		# Si tenemos todas las llaves y la nueva posicion es la SALIDA añadimos el descendiente
+		if not nodo.estado.quedanLlaves() and nuevaPos == SALIDA:
 			sucesores.append(node(nodo,2, state(nuevaPos,nodo.estado.rocas[:],nodo.estado.llaves[:])))
 		# Si en la nueva posicion no hay muros y no es un sitio peligroso
 		elif not MUROS[nuevaPos[0]][nuevaPos[1]] and not esSitioPeligroso(nuevaPos,nodo.estado):
@@ -206,33 +342,48 @@ def backtracking(N):
 	while nodo != None:
 		path.append(nodo.estado.al)
 		nodo = nodo.padre
-	path = path[::-1]
-	directions = {(0,1):"Right",(0,-1):"Left",(1,0):"Down",(-1,0):"Up"}
-	path_directions = []
-	for i in range(len(path)-1):
-		diff = (-path[i][0]+path[i+1][0],-path[i][1]+path[i+1][1])
-		path_directions.append(directions[diff])
-	return path_directions
+	return path[:0:-1]
+def animar(N):
+	estados = []
+	nodo = N
+	while nodo != None:
+		estados.append(nodo.estado)
+		nodo = nodo.padre
+	estados = estados[::-1]
+	for e in estados:
+		ventana.vaciar()
+		ventana.draw(e)
+		time.sleep(CONFIG["velocidad"])
 def esSitioPeligroso(pos,estado):
 	'''Devuelve True si `pos` es una posicion peligrosa en `estado`
 	   pos es una tupla (x,y)
 	   estado es un state
 	'''
-	# Nos movemos hacia la izquierda hasta encontrar el primer muro o roca
+	return haySerpienteIz(pos,estado)[0] or haySerpienteDer(pos,estado)[0]
+def haySerpienteIz(pos,estado):
+	'''Devuelve True si `pos` tiene una serpiente a la izquierda en `estado`
+	   Devuelve la posicion de la serpiente
+	   pos es una tupla (x,y)
+	   estado es un state
+	'''
 	i = pos[1]-1
+	# Nos movemos hacia la izquierda hasta encontrar el primer muro o roca
 	while not MUROS[pos[0]][i] and (pos[0],i) not in estado.rocas:
 		i-=1
 	# Si es una serpiente es un sitio peligroso y devolvemos True
-	if (pos[0],i) in SERPIENTES:
-		return True
+	return (pos[0],i) in SERPIENTES, (pos[0],i)
+def haySerpienteDer(pos,estado):
+	'''Devuelve True si `pos` tiene una serpiente a la derecha en `estado`
+	   Devuelve la posicion de la serpiente
+	   pos es una tupla (x,y)
+	   estado es un state
+	'''
 	i = pos[1]+1
 	# Nos movemos hacia la derecha hasta encontrar el primer muro o roca
 	while not MUROS[pos[0]][i] and (pos[0],i) not in estado.rocas:
 		i+=1
 	# Si es una serpiente es un sitio peligroso y devolvemos True
-	if (pos[0],i) in SERPIENTES:
-		return True
-	return False
+	return (pos[0],i) in SERPIENTES, (pos[0],i)
 def hayLlave(pos, estado):
 	'''Devuelve True si en el `estado` hay una llave en `pos`
 	   pos es una tupla (x,y)
@@ -246,33 +397,45 @@ def hayLlave(pos, estado):
 MUROS=[]
 LLAVES = []
 SERPIENTES = []
-salida = (None,None)
-rocas = []
-al = (None,None)
+SALIDA = (None,None)
 
-f = open('lab_astar/lab4.map','r')
+
+f = open(sys.argv[1],'r')
+#f = open("lab_astar/lab3.map",'r')
 archivo = f.read()
 f.close()
 archivo = archivo.split('\n')
+if "" in archivo:
+	archivo.remove("")
+rocas = []
 for i in range(len(archivo)):
 	fila = []
 	for j in range(len(archivo[i])):
 		if archivo[i][j] == 'A':
 			al = (i,j)
 		if archivo[i][j] == 'E':
-			salida = (i,j)
+			SALIDA = (i,j)
 		if archivo[i][j] == 'O':
 			rocas.append((i,j)) 
 		if archivo[i][j] == 'K':
 			LLAVES.append((i,j))
 		if archivo[i][j] == 'S':
 			SERPIENTES.append((i,j))
-		fila.append(True) if archivo[i][j] == '%' or archivo[i][j] == 'E' or archivo[i][j] == 'S' else fila.append(False)
+		fila.append(archivo[i][j] == '%' or archivo[i][j] == 'E' or archivo[i][j] == 'S')
 	MUROS.append(fila)
-print("MUROS:")
-[print(m) for m in MUROS]
+
 print("LLAVES:",LLAVES)
 print("SERPIENTES:",SERPIENTES)
-print("SALDIA:",salida)
+print("SALIDA:",SALIDA)
+print()
 I = node(None, 0, state(al, rocas, [False]*len(LLAVES)))
+if CONFIG["interfaz"]:
+	blueprint = [list(row[:]) for row in archivo]
+	for i in range(len(blueprint)):
+		for j in range(len(blueprint[i])):
+			if blueprint[i][j] == 'O' or blueprint[i][j] == 'A' or blueprint[i][j] == 'K':
+				blueprint[i][j] = ' '
+	ventana = interfaz()
+	ventana.draw(I.estado)
+START = time.time()
 astar()
