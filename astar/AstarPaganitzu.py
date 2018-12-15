@@ -1,8 +1,7 @@
 # Built using Python 3.6.7
 # Alberto Villanueva
 # Cristian Cabrera
-# Interface courtesy of pygame
-
+# Interface courtesy of pygame (www.pygame.org)
 
 CONFIG = {
 	# ficheros
