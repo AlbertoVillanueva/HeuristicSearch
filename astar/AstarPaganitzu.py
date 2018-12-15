@@ -1,3 +1,9 @@
+# Built using Python 3.6.7
+# Alberto Villanueva
+# Cristian Cabrera
+# Interface courtesy of pygame
+
+
 CONFIG = {
 	# ficheros
 	"crearOutput": False,
@@ -11,7 +17,10 @@ CONFIG = {
 	"detectarMuros": False,
 	"detectarLlavesPeligrosas": True,
 	# interfaz
-	"interfaz": True,
+	###########
+	# WARNING # If this is True you must have pygame installed in for it to work
+	########### Si esta en True tienes que tener pygame instalado para que funcione
+	"interfaz": False, 
 	"velocidad": 0.35
 }
 
