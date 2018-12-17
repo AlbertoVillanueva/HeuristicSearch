@@ -39,7 +39,6 @@ class state():
 	def hayLlave(self, pos):
 		'''Devuelve True si en el `estado` hay una llave en `pos`
 		   pos es una tupla (x,y)
-		   estado es un state
 		'''
 		if pos in LLAVES:
 			return not self.llaves[LLAVES.index(pos)]
@@ -62,6 +61,8 @@ class state():
 		i = pos[1]-1
 		# Nos movemos hacia la izquierda hasta encontrar el primer muro o roca
 		while not MUROS[pos[0]][i] and (pos[0],i) not in self.rocas:
+			if self.hayLlave((pos[0],i)):
+				break
 			i-=1
 		# Si es una serpiente es un sitio peligroso y devolvemos True
 		return (pos[0],i) in SERPIENTES, (pos[0],i)
@@ -73,6 +74,8 @@ class state():
 		i = pos[1]+1
 		# Nos movemos hacia la derecha hasta encontrar el primer muro o roca
 		while not MUROS[pos[0]][i] and (pos[0],i) not in self.rocas:
+			if self.hayLlave((pos[0],i)):
+				break
 			i+=1
 		# Si es una serpiente es un sitio peligroso y devolvemos True
 		return (pos[0],i) in SERPIENTES, (pos[0],i)
@@ -190,7 +193,7 @@ class node():
 				sucesores.append(node(self,2, state(nuevaPos,self.estado.rocas[:],self.estado.llaves[:])))
 			# Si en la nueva posicion no hay muros y no es un sitio peligroso
 			elif not MUROS[nuevaPos[0]][nuevaPos[1]]:
-				comprobarSerpientes = (m == movimientos[0])or(m==movimientos[1])
+				comprobarSerpientes = m in movimientos[:2]
 				if comprobarSerpientes:
 					if self.estado.esSitioPeligroso(nuevaPos):
 						continue
@@ -210,6 +213,8 @@ class node():
 					# Añadimos el descendiente recogiendo las llaves que haya en la nueva posicion
 					nuevasLlaves = self.estado.llaves[:]
 					if nuevaPos in LLAVES:
+						if self.estado.esSitioPeligroso(nuevaPos):
+							continue
 						nuevasLlaves[LLAVES.index(nuevaPos)] = True
 					sucesores.append(node(self, 2, state(nuevaPos,self.estado.rocas[:],nuevasLlaves)))
 		# Devolvemos los sucesores

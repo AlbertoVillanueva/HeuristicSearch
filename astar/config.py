@@ -16,6 +16,6 @@ CONFIG = {
 		# WARNING # Si "interfaz" esta en True tienes que tener pygame instalado para que funcione
 		###########
 		
-	"interfaz": False, 
+	"interfaz": True, 
 	"velocidad": 0.2
 }
