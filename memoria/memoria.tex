@@ -1,0 +1,271 @@
+\documentclass[11pt,spanish]{article}
+
+\usepackage[utf8]{inputenc} % Required for inputting international characters
+\usepackage[T1]{fontenc}
+\usepackage{mathpazo} % Palatino font
+\usepackage{amsmath}
+\usepackage{selinput}
+\SelectInputMappings{%
+	aacute={á},
+	ntilde={ñ},
+	Euro={€}
+}
+\usepackage{babel}
+\usepackage{hyperref}
+\usepackage{multirow}
+\usepackage{caption}
+\usepackage{graphicx}
+
+\hypersetup{
+	colorlinks,
+	citecolor=black,
+	filecolor=black,
+	linkcolor=black,
+	urlcolor=blue
+}
+\begin{document}
+%------------------------------------------------------------------------------------------
+
+	%---------------------------%
+	%	Stop Numbering Pages	%
+	%---------------------------%
+
+	\pagenumbering{gobble}
+
+%------------------------------------------------------------------------------------------
+	\begin{titlepage} % Suppresses displaying the page number on the title page and the subsequent page counts as page 1
+	
+	\newcommand{\HRule}{\rule{\linewidth}{0.5mm}} % Defines a new command for horizontal lines, change thickness here
+	
+	\center % Centre everything on the page
+	
+	%---------------%
+	%	Encabezados	%
+	%---------------%
+	
+	\textsc{\LARGE Universidad Carlos III de Madrid}\\[1.5cm] % Main heading such as the name of your university/college
+	
+	\textsc{\Large Grado en Ingeniería Informática}\\[0.5cm] % Major heading such as course name
+	
+	\textsc{\large Heurística y Optimización}\\[0.5cm] % Minor heading such as course title
+	
+	%-----------%
+	%	Titulo	%
+	%-----------%
+	
+	\HRule\\[0.4cm]
+	
+	{\huge\bfseries Práctica: Programación Lineal}\\[0.4cm] % Title of your document
+	
+	\HRule\\[1.5cm]
+	
+	%---------------%
+	%	Author(s)	%
+	%---------------%
+	
+	\begin{minipage}{0.7\textwidth}
+		\begin{flushleft}
+			\large
+			\textit{Autores}\\
+			\textsc{Alberto Villanueva Nieto\ \ \ \ 100374691}\\
+			\textsc{Cristian Cabrera Pinto\ \ \ \ \ \ \ \ \ \ 100363778}
+		\end{flushleft}
+	\end{minipage}
+
+	%-----------%
+	%	Date	%
+	%-----------%
+	
+	\vfill\vfill\vfill % Position the date 3/4 down the remaining page
+	
+	{\large\today} % Date, change the \today to a set date if you want to be precise
+	
+	\vfill % Push the date up 1/4 of the remaining page
+	
+	\end{titlepage}
+	\newpage
+%------------------------------------------------------------------------------------------
+	\tableofcontents
+	\newpage
+%------------------------------------------------------------------------------------------
+
+	%---------------------------%
+	%	Start Numbering Pages	%
+	%---------------------------%
+
+	\pagenumbering{arabic}
+
+%------------------------------------------------------------------------------------------
+	\section{Intorducción}
+	Este documento está destinado a la explicación de los contenidos de la práctica. Esta práctica se divide en tres partes, dos partes obligatorias y una parte opcional. La primera parte se trata de un problema de satisfabilidad lógica en el cual hay que colocar a un personaje y unas serpientes en un mapa cumpliendo una serie de restricciones, para ello se explica la modelización que se ha llevado a cabo y un pequeño análisis de los resultados que se han obtenido. La segunda y tercera parte consiste en una búsqueda heurística en la que un personaje tiene que coger las llaves de un mapa, evitando las serpientes, para poder llegar a la salida. Para ello se explican la modelización que se ha llevado a cabo, las heurísticas desarrolladas y un análisis de los resultados. 
+	\section{Satisfabilidad lógica}
+		\subsection{Modelización}
+			\subsubsection{Variables}
+			\begin{itemize}
+				\item Ah : Al se encuentra en el hueco h.
+				\item Snh: La serpiente n se encuentra en el hueco h.
+			\end{itemize}
+			\subsubsection{Cláusulas}
+			Para el cumplimiento de la restricción de que Al y las serpientes se encuentren tan solo en lo huecos vacíos se ha trabajado solo sobre esos huecos no teniendo en cuenta ni las paredes ni las llaves ni las rocas ni la salida.\\
+			Para aclarar las siguientes cláusulas se explicaran una serie de términos:\\
+			\begin{itemize}
+				\item H: Conjunto de todos los huecos sobre los que se iterará con la forma (i, j). Siendo i las filas y j las columnas.
+				\item h1 y h2: Hueco en el que se encuentren tanto Al como las serpientes.
+				\item h1,i : Fila i del hueco h1. Para h2.i tiene el mismo significado.
+				\item h1,j: Columna j del hueco h1. Para h2,j tiene el mismo significado.
+				\item N: Conjunto de las serpientes que hay
+			\end{itemize}
+			\textbf{Un hueco por personaje}\\\\
+			Aunque no aparece en el enunciado otra restricción que nos encotramos es que no puede haber más de un personaje en el mismo hueco. Para tratar esa restricción se crea la siguiente cláusula en la que tan solo está implicado Al (el personaje):
+			\begin{equation*}
+				A_{h_1} \implies \bigwedge\limits_{h_2}^H \neg A_{h_2}; h_1 \neq h_2; \forall h_1\in H
+			\end{equation*}
+			Esta cláusula es una implicación que itera sobre todos los huecos del mapa y significa que si Al esta el el hueco h1 no puede haber otro al en el mismo hueco pero si en otro. Además los huecos en los que esté el personaje debe pertenece al conjunto de todos los huecos del mapa.\\
+			Como es una implicación no está en forma normal conjuntiva (CNF) por lo que se aplican fórmulas lógicas para llegar a ello, obteniendo la siguiente expresión para las cláusulas:
+			\begin{equation*}
+				\bigwedge\limits_{h_2}^H (\neg A_{h_1} \lor \neg A_{h_2}); h_1 \neq h_2; \forall h_1\in H
+			\end{equation*}
+			\textbf{Un hueco por serpiente}\\\\
+			Otra restricción que nos podemos encontrar es que no puede haber más de una serpiente en el mismo hueco. Para tratar esa restricción se crea la siguiente cláusula en la que están implicadas las serpientes:
+			\begin{equation*}
+				S_{n,h_1} \implies \bigwedge\limits_{h_2}^H \neg S_{n,h_2}; h_1 \neq h_2; \forall h_1\in H; \forall n \in N
+			\end{equation*}
+			Esta cláusula es una implicación que itera sobre todos los huecos del mapa y significa que si la serpiente n está en el hueco h1 esta no puede estar en el hueco h2. Además los huecos en los que se encuentre la serpiente tiene que pertenecer al conjunto de huecos del mapa y la serpiente n tiene que pertenecer al conjunto de valores entre 0 y N-1. Pero para poder resolver el problema de satisfabilidad la cláusula tiene que estar en forma normal conjuntiva (CNF), de modo que el conjunto de cláusulas quedaría de la siguiente forma:
+			\begin{equation*}
+				\bigwedge\limits_{h_2}^H (\neg S_{n,h_1} \lor \neg S_{n,h_2}); h_1 \neq h_2; \forall h_1\in H; \forall n \in N
+			\end{equation*}
+			\textbf{Una serpiente por fila}\\\\
+			Otra restricción que nos aparece en el enunciado es que tan solo puede haber una serpiente por fila. Para tratarla hemos llevado a cabo la siguiente cláusula:
+			\begin{equation*}
+				S_{n,h_1} \implies \bigwedge\limits_{h_2}^H \neg S_{m,h_2}; h_1.fila \neq h_2.fila; n \neq m; \forall h_1 \in H; \forall n,m \in N
+			\end{equation*}
+			Esta cláusula es una implicación que itera sobre todos los huecos del mapa y significa que si la serpiente n está en el hueco h1 con fila i entonces no puede haber otra serpiente m en un hueco h2 en la misma fila i. Los huecos en los que se encuentre la serpiente tiene que pertenecer al conjunto de huecos del mapa y las serpientes n y m tiene que pertenecer al conjunto de valores entre 0 y N-1. Pero para poder resolver el problema de satisfabilidad la cláusula tiene que estar en forma normal conjuntiva (CNF), de modo que el conjunto de cláusulas quedaría de la siguiente forma:
+			\begin{equation*}
+				\bigwedge\limits_{h_2}^H (\neg S_{n,h_1} \lor \neg S_{m,h_2}); h_1.fila \neq h_2.fila; n \neq m; \forall h_1 \in H; \forall n,m \in N
+			\end{equation*}
+			\textbf{Columna de la serpiente distinta a la columna de Al}\\\\
+			También nos podemos encontrar otra restricción en el enunciado que nos indica que una serpiente no puede estar en la misma columna que Al. Para ello hemos modelado la siguiente cláusula:
+			\begin{equation*}
+				A_{h_1} \implies \bigwedge\limits_{h_2}^H \neg S_{n,h_2}; h_1.columna = h_2.columna; \forall h_1\in H; \forall n,m \in N
+			\end{equation*}
+			Esta cláusula itera sobre todos lo huecos del mapa y significa que si Al está en el hueco h1 con valor de columna j  no puede haber una serpiente n (con valores entre 0 y N-1) en un hueco h2  en la misma columna j. Los huecos en los que se encuentra Al y las serpientes pertenecen al conjunto de huecos del mapa. Para poder aplicar la resolución de satisfabilidad lógica las cláusulas tienen que estar en forma normal conjuntiva (CNF), de modo que el conjunto de cláusulas quedaría de la siguiente forma:
+			\begin{equation*}
+				\bigwedge\limits_{h_2}^H (\neg A_{h_1} \lor \neg S_{n,h_2}); h_1.columna = h_2.columna; \forall h_1\in H; \forall n,m \in N
+			\end{equation*}
+			\textbf{Fila de la serpiente distinta a la fila de Al}\\\\
+			También nos podemos encontrar otra restricción en el enunciado que nos indica que una serpiente no puede estar en la misma fila que Al. Para ello hemos modelado la siguiente cláusula:
+			\begin{equation*}
+				A_{h_1} \implies \bigwedge\limits_{h_2}^H \neg S_{n,h_2}; h_1.fila = h_2.fila; \forall h_1\in H; \forall n\in N
+			\end{equation*}
+			Esta cláusula itera sobre todos lo huecos del mapa y significa que si Al está en el hueco h1 con valor de fila i  no puede haber una serpiente n (con valores entre 0 y N-1) en un hueco h2  en la misma fila i. Los huecos en los que se encuentra Al y las serpientes pertenecen al conjunto de huecos del mapa. Para poder aplicar la resolución de satisfabilidad lógica las cláusulas tienen que estar en forma normal conjuntiva (CNF), de modo que el conjunto de cláusulas quedaría de la siguiente forma:
+			\begin{equation*}
+				\bigwedge\limits_{h_2}^H (\neg A_{h_1} \lor \neg S_{n,h_2}); h_1.fila = h_2.fila; \forall h_1\in H; \forall n\in N
+			\end{equation*}
+			\textbf{Un único personaje en el mapa}\\\\
+			Esta restricción no aparece de forma explicita en el enunciado pero es evidente que tan solo puede haber un Al en el mapa de juego, por ello se ha modelizado la siguiente cláusula para controlarlo:
+			\begin{equation*}
+				\bigvee\limits_{h}^H A_h; \forall h \in H
+			\end{equation*}
+			Está es una única cláusula sobre todos los posibles huecos en los que puede estar Al para que tan solo haya un Al en el mapa.
+			\textbf{N serpientes en el mapa}\\\\
+			Esta restricción no aparece de forma explicita en el enunciado pero es evidente que tan solo puede haber N serpiente en todo el mapa, pare ello se ha modelizado la siguiente cláusula para controlarlo:
+			\begin{equation*}
+				\bigvee\limits_{h}^H S_{n,h} ;\forall h \in H;\forall n \in N
+			\end{equation*}
+			Esta cláusula hace que para las n serpientes se compruebe que no hay más de N serpientes en todo el mapa.
+		
+		\subsection{Evaluación}
+			\begin{tabular}{ |c||c|c|c|p{0.35\linewidth}| }
+				\hline
+				&\textbf{Tamaño}&\textbf{Serpientes}&\textbf{Tiempo}&\textbf{Resultado}\\
+				\hline
+				\hline
+				\textbf{Mapa 1}&5x10&1&0.06 s&Se colocan correctamente las serpientes y Al\\
+				\hline
+				\textbf{Mapa 1}&5x10&2&0.07 s&Se colocan correctamente las serpientes y Al\\
+				\hline
+				\textbf{Mapa 1}&5x10&3&0.1 s&No satisfacible\\
+				\hline
+				\textbf{Mapa 2}&7x12&1&0.07 s&Se colocan correctamente las serpientes y Al\\
+				\hline
+				\textbf{Mapa 2}&7x12&3&0.09 s&Se colocan correctamente las serpientes y Al\\
+				\hline
+				\textbf{Mapa 2}&7x12&5&0.9 s&SNo satisfacible\\
+				\hline
+				\textbf{Mapa 3}&10x17&1&0.1 s&Se colocan correctamente las serpientes y Al\\
+				\hline
+				\textbf{Mapa 3}&10x17&5&0.18 s&Se colocan correctamente las serpientes y Al\\
+				\hline
+				\textbf{Mapa 3}&10x17&7&0.17 s&Se colocan correctamente las serpientes y Al\\
+				\hline
+				\textbf{Mapa 4}&17x25&1&0.22 s&Se colocan correctamente las serpientes y Al\\
+				\hline
+				\textbf{Mapa 4}&17x25&4&0.34 s&Se colocan correctamente las serpientes y Al\\
+				\hline
+				\textbf{Mapa 4}&17x25&8&0.54 s&Se colocan correctamente las serpientes y Al\\
+				\hline
+			\end{tabular}
+			Con la tabla anterior podemos comprobar que:
+			\begin{itemize}
+				\item Dentro de un mismo mapa a mayor número de serpientes mayor es el tiempo que tarda en encontrar una solución esto es debido a que el número de nodos que tiene que expandir para la búsqueda de la solución es mayor. Este tiempo que tarda en encontrar una solución para un mismo mapa también se ve afectado por el tamaño del mapa puesto que a mayor tamaño mayor es la diferencia de tiempos que podemos encontrar dentro de un mismo mapa debido a que tiene que recorrer más columnas para cumplir con la restricción de que no haya más de una serpiente en la fila y que la serpiente no se encuentre en la misma columna que Al.
+				\item En mapas distintos para el mismo caso también podemos comprobar que el tiempo que tarda en encontrar una solución es mayor y esto también es debido a la cantidad de nodos que tiene que expandir para encontrar la solución satisfacible.
+				\item También podemos comprobar que a partir de cierto tamaño de mapa si hacemos que el número de serpientes a colocar sea mayor que el número de filas en las que se pueden colocar el programa tarda demasiado tiempo en determinar que el problema no es satisfacible, esto es debido a que tiene que realizar todas las combinaciones posibles para establecer un modelo y si el mapa es demasiado grande con gran cantidad de huecos en los que colocar tanto a las serpientes como al personaje el tiempo que tarda en realizar esta búsqueda es muy elevado.
+				\item Otra cosa que podemos observar en la tabla anterior es que en los casos en los que si se ha obtenido una solución no satisfacible (ya que el tamaño del mapa lo permitía) el tiempo que tarda en ejecutar es mucho mayor que el tiempo que se tarda en ejecutar para el caso más extremo en el que hay una serpiente por fila, esto es debido a que el algoritmo de resolución tiene que hacer todas las comprobaciones posibles para encontrar un modelo que determine una solución posible para esa situación.
+				\item Comprobando los resultados que se obtienen en todos los mapas se observa que Al siempre se encuentra en la última fila en la que haya un hueco y de ahí las serpientes quedan colocadas en las filas anteriores. También podemos observar que en todos los casos tanto Al como todas las serpientes aparecen en la casilla en la que pueden estar que está más a la izquierda del mapa. Estas dos situaciones son debidas a como está implementado el algoritmo de resolución para los problemas de satisfabilidad en la librería de Java utilizada.
+			\end{itemize}
+			Los mapas con los que se ha probado han sido los proporcionados por los profesores y anexados a la entrega.
+	\section{Búsqueda heurística}
+		\subsection{Modelización}
+			\subsubsection{Representación de los estados}
+				Dado que en los estados, lo único que es mutable es la posición de Al, la posición de las rocas, y si se han cogido o no las llaves, esto va a ser de lo único de lo que esten compuestos nuestros estados.
+				\begin{itemize}
+					\item Al: es la posición de Al
+					\item Rocas: el conjunto formado por las posiciones de las rocas
+					\item Llaves: el conjunto formado por las posiciones de las llaves que quedan\footnote{El el código se ha implementado como una lista de booleanos ya que las llaves tienen una posicion estática, de esta forma, llavesi representa si la llave i-ésima se ha recogido ($\top$ es que se ha recogido, $\bot$ es que no)}
+				\end{itemize}
+				Las posiciones estan representadas de la forma: (fila, columna)
+			\subsubsection{Acciones y operadores}
+			Al puede hacer 4 movimientos, moverse hacia arriba, hacia abajo, hacia la izquierda y hacia la derecha. Para representar los cambios que hacen el moverse en una dirección sobre al se ha representado mediante las operaciones que se hacen en las coordenadas:
+			\begin{itemize}
+				\item Arriba: (-1,0)
+				\item Abajo: (1,0)
+				\item Izquierda: (0,-1)
+				\item Derecha: (0,1)
+			\end{itemize}
+			De esta forma, cuando escribamos arriba(al), es quivalente a disminuir la fila de al en 1.
+			Para cada uno de estos movimientos, se pueden realizar dos acciones que son mutualmente exclusivas, moverse o mover una roca con coste 2 y 4 respectivamente.\\
+			Además al moverse horizontalmente no hay que comprobar que haya en la fila ya que si estas en esa fila no puede haber serpientes o al estaría muerto.\\
+			De esta forma las acciones y operadores quedarían definidos de la siguiente forma:\\
+			\textbf{Para los movimientos verticales (Arriba y Abajo)}
+			\begin{itemize}
+				\item precondiciones: $(Movimiento(Al) \notin muros, rocas \land Movimiento(Al)\ no\ es$\\$peligroso) \lor (llaves = \emptyset \land Movimiento(Al) = salida)$\\
+				$\implies Al = Movimiento(Al), llaves = llaves\setminus Movimiento(Al)$
+				\item precondiciones: $Movimiento(Al) \in rocas \land Movimiento(Movimiento(Al)) \notin rocas, llaves, muros$\\
+				$\implies Al = Movimiento(Al), rocas = rocas\setminus Movimiento(Al), rocas = rocas \cup Movimiento(Movimiento(Al))$
+			\end{itemize}
+			\textbf{Para los movimientos horizontales (Izquierda y Derecha)}
+			\begin{itemize}
+				\item precondiciones: $Movimiento(Al) \notin muros, rocas \lor (llaves = \emptyset \land Movimiento(Al) = salida)$\\
+				$\implies Al = Movimiento(Al), llaves = llaves\setminus Movimiento(Al)$
+				\item precondiciones: $Movimiento(Al) \in rocas \land Movimiento(Movimiento(Al)) \notin rocas, llaves, muros$\\
+				$\implies Al = Movimiento(Al), rocas = rocas\setminus Movimiento(Al), rocas = rocas \cup Movimiento(Movimiento(Al))$
+			\end{itemize}
+		\subsubsection{Estado Inicial}
+			El estado inicial tiene a Al, las rocas y las llaves\footnote{En nuestra implementación es un conjunto con una posicion por cada llave que hay en el mapa donde esta todo como $\bot$, ya que aun no ha recogido ninguna.} en sus posiciones iniciales.
+		\subsubsection{Estado Final}
+			Dado que limitamos el poder entrar en la casilla de salida para que solo entren si tienen todas las llaves, solo hay que comprobar que el estado este en la misma posicion que la salida para que sea un estado final.
+	\subsection{Analisis}
+		\subsubsection{Casos de prueba}
+		\subsubsection{Comparación de heurísticas}
+			\textbf{Heurística 1}\\
+			man(al,km) = maxk llaves(man(al,k))\\
+			h1 = 2*max(man(al,km) + man(km,E),llaves que quedan) si quedan llaves\\
+				 = 2*man(al,E) si no quedan llaces\\
+			Es decir, 2 por el maximo enre la distancia manhattan hasta la llave mas lejana mas la distancia manhattan desde esa llave hasta la salida y las llaves que quedan.\\
+			Se usa esta heurística ya que es el maximo de 2 heuristicas mas simples luego se convierte en una heurística ligeramente mas fuerte.\\
+			\textbf{Heurística 2}\\
+			Esta heuristica es una mejora con respecto a la primera.\\
+			Para empezar, en vez de usar la distancia manhattan, usa una función modificada, al principio de la funcion, busca si en el submapa que se genera, hay algun muro vertical u horizontal, si hay un muro vertical le suma 2 a la distancia manhattan y si hay un muro horizontal le suma otros 2. Esto es para representar que no se puede recorrer con la distancia manhattan por en medio sino que hay que rodearlo.
+%------------------------------------------------------------------------------------------
+
+\end{document}

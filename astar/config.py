@@ -7,9 +7,6 @@ CONFIG = {
 	"imprimirStatistics": True,
 	# extra
 	"hayDiagonales": False,
-	# heuristicas
-	"detectarMuros": True,
-	"detectarLlavesPeligrosas": True,
 	# interfaz
 	
 		###########
@@ -17,5 +14,5 @@ CONFIG = {
 		###########
 		
 	"interfaz": True, 
-	"velocidad": 0.2
+	"velocidad": 0.3
 }

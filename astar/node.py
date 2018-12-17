@@ -90,7 +90,7 @@ class node():
 	g = None
 	f = None
 	estado = None
-	def __init__(self, padre, c, estado):
+	def __init__(self, padre, c, estado, heuristica):
 		'''Inicializa el nodo dado el padre del nodo, el coste para llegar desde el padre hasta el nodo, y el estado del nuevo nodo
 		   padre es un puntero a una instancia de node
 		   c es un numero
@@ -106,38 +106,53 @@ class node():
 		# Se asigna el estado
 		self.estado = estado
 		# Se asigna la funcion de evaluacion calculando la heuristica
-		self.f = self.g + self.h()
-	def h(self):
-		'''Devuelve el valor heuristico
+		if heuristica == "h1":
+			self.f = self.g + self.h1()
+		elif heuristica == "h2":
+			self.f = self.g + self.h2()
+
+	def h1(self):
+		'''Devuelve el valor heuristico usando la primera heurística
 		'''
 		coste = 0
 		# si quedan llaves añadir la distancia hasta la llave mas lejana y la distancia desde esa llave hasta la salida
 		if self.estado.quedanLlaves():
 			llaveLejos = max((self.distancia(LLAVES[k],self.estado.al),LLAVES[k]) for k in range(len(LLAVES)) if not self.estado.llaves[k])
-			coste += 2*max(llaveLejos[0] + self.distancia(llaveLejos[1],tuple(SALIDA)), len(self.estado.llaves)-sum(self.estado.llaves)-1)
+			coste += 2*max(llaveLejos[0] + self.distancia(llaveLejos[1],tuple(SALIDA)), len(self.estado.llaves)-sum(self.estado.llaves))
 		# si no quedan llaves añadir la distancia hasta la salida
 		else:
 			coste += 2*self.distancia(self.estado.al,tuple(SALIDA))
-		# si queremos detectar las llaves que esten en peligro
-		if CONFIG["detectarLlavesPeligrosas"]:
-			# para cada llave
-			for i in range(len(LLAVES)):
-				# si hay serpientes y aun no hemos cogido esta llave añadir el minimo coste para tapar la(s) serpiente que ponen en peligro la llave
-				if SERPIENTES != [] and not self.estado.llaves[i]:
-					hayIz, serpiente = self.estado.haySerpienteIz(LLAVES[i])
-					if hayIz:
-						coste += 2*min(self.taparSerpiente(serpiente,LLAVES[i],r) for r in self.estado.rocas)
-					hayDer, serpiente = self.estado.haySerpienteDer(LLAVES[i])
-					if hayDer:
-						coste += 2*min(self.taparSerpiente(serpiente,LLAVES[i],r) for r in self.estado.rocas)
 		return coste
-	def distancia(self, pos1, pos2):
+	def h2(self):
+		'''Devuelve el valor heuristico usando la segunda heurística
+		'''
+		coste = 0
+		# si quedan llaves añadir la distancia hasta la llave mas lejana y la distancia desde esa llave hasta la salida
+		if self.estado.quedanLlaves():
+			llaveLejos = max((self.distancia(LLAVES[k],self.estado.al,detectarMuros=True),LLAVES[k]) for k in range(len(LLAVES)) if not self.estado.llaves[k])
+			coste += 2*max(llaveLejos[0] + self.distancia(llaveLejos[1],tuple(SALIDA),detectarMuros=True), len(self.estado.llaves)-sum(self.estado.llaves))
+		# si no quedan llaves añadir la distancia hasta la salida
+		else:
+			coste += 2*self.distancia(self.estado.al,tuple(SALIDA),detectarMuros=True)
+		# para cada llave
+		for i in range(len(LLAVES)):
+			# si hay serpientes y aun no hemos cogido esta llave añadir el minimo coste para tapar la(s) serpiente que ponen en peligro la llave
+			if SERPIENTES != [] and not self.estado.llaves[i]:
+				hayIz, serpiente = self.estado.haySerpienteIz(LLAVES[i])
+				if hayIz:
+					coste += 2*min(self.taparSerpiente(serpiente,LLAVES[i],r) for r in self.estado.rocas)
+				hayDer, serpiente = self.estado.haySerpienteDer(LLAVES[i])
+				if hayDer:
+					coste += 2*min(self.taparSerpiente(serpiente,LLAVES[i],r) for r in self.estado.rocas)
+		return coste
+	def distancia(self, pos1, pos2, detectarMuros=False):
 		'''Devuelve la distancia desde `pos1` hasta `pos2`
 		   pos1 es una tupla (x,y)
 		   pos2 es una tupla (x,y)
+		   por defecto hace la distancia Manhattan, pero si detectarMuros se pone en True tiene en cuante muros
 		'''
 		camino = abs(pos1[0]-pos2[0])+abs(pos1[1]-pos2[1])
-		if CONFIG["detectarMuros"]:
+		if detectarMuros:
 			esquinaMenor = (min(pos1[0],pos2[0]),min(pos1[1],pos2[1]))
 			esquinaMayor = (max(pos1[0],pos2[0]),max(pos1[1],pos2[1]))
 			for i in range(esquinaMenor[0]+1,esquinaMayor[0]):
@@ -177,7 +192,7 @@ class node():
 				return True, i
 		# Si ningun estado era igual devolvemos Flase y None por posicion
 		return False, None
-	def genSucesores(self):
+	def genSucesores(self,heuristica):
 		'''Devuelve una lista con los sucesores
 		'''
 		# Iniciamos la lista de sucesores vacia
@@ -188,36 +203,32 @@ class node():
 		for m in movimientos:
 			# Calculamos la nueva posicion para ese movimiento
 			nuevaPos = (self.estado.al[0]+m[0],self.estado.al[1]+m[1])
-			# Si tenemos todas las llaves y la nueva posicion es la SALIDA añadimos el descendiente
-			if not self.estado.quedanLlaves() and nuevaPos == tuple(SALIDA):
-				sucesores.append(node(self,2, state(nuevaPos,self.estado.rocas[:],self.estado.llaves[:])))
-			# Si en la nueva posicion no hay muros y no es un sitio peligroso
-			elif not MUROS[nuevaPos[0]][nuevaPos[1]]:
-				comprobarSerpientes = m in movimientos[:2]
-				if comprobarSerpientes:
-					if self.estado.esSitioPeligroso(nuevaPos):
-						continue
-				# Si en la nueva posicion hay alguna roca
-				if nuevaPos in self.estado.rocas:
-					# Calculamos la posicion a la que la roca se moveria
-					siguientePos = (nuevaPos[0]+m[0],nuevaPos[1]+m[1])
-					# Si podemos moverla alli (Si no hay otras rocas, muros o llaves)
-					if not(siguientePos in self.estado.rocas or MUROS[siguientePos[0]][siguientePos[1]] or self.estado.hayLlave(siguientePos)):
-						# Calculamos las nuevas posiciones de las rocas y lo añadimos el descendiente
-						nuevasRocas = self.estado.rocas[:]
-						nuevasRocas.remove(nuevaPos)
-						nuevasRocas.append(siguientePos)
-						sucesores.append(node(self, 4, state(nuevaPos,nuevasRocas,self.estado.llaves[:])))
-				# SI en la nueva posicion no hay rocas
-				else:
-					# Añadimos el descendiente recogiendo las llaves que haya en la nueva posicion
-					nuevasLlaves = self.estado.llaves[:]
-					if nuevaPos in LLAVES:
-						if self.estado.esSitioPeligroso(nuevaPos):
-							continue
-						nuevasLlaves[LLAVES.index(nuevaPos)] = True
-					sucesores.append(node(self, 2, state(nuevaPos,self.estado.rocas[:],nuevasLlaves)))
-		# Devolvemos los sucesores
+			# Calculamos la nueva posicion para la roca (en caso de que moviera roca)
+			nuevaPosRoca = (self.estado.al[0]+2*m[0],self.estado.al[1]+2*m[1])
+			# Miramos si la accion es mover una roca
+			mueveRoca = nuevaPos in self.estado.rocas
+			# Miramos si la nueva posicion de la roca seria una llave
+			nuevaPosRocaEsLlave = False
+			if nuevaPos in LLAVES:
+				if not self.estado.llaves[LLAVES.index(nuevaPos)]:
+					nuevaPosRocaEsLlave = True
+			# Si las precondiciones para mover una roca se cumplen
+			if mueveRoca and not MUROS[nuevaPosRoca[0]][nuevaPosRoca[1]] and nuevaPosRoca not in self.estado.rocas and not nuevaPosRocaEsLlave and (m in movimientos[2:] or not self.estado.esSitioPeligroso(nuevaPos)):
+				# Mueve la roca
+				nuevasRocas = self.estado.rocas[:]
+				nuevasRocas.remove(nuevaPos)
+				nuevasRocas.append(nuevaPosRoca)
+				# Se mueve
+				sucesores.append(node(self, 4, state(nuevaPos,nuevasRocas,self.estado.llaves[:]),heuristica))
+			# Si las precondiciones para moverse se cumplen
+			elif (not mueveRoca and not MUROS[nuevaPos[0]][nuevaPos[1]] and not self.estado.esSitioPeligroso(nuevaPos)) or (not self.estado.quedanLlaves() and nuevaPos == tuple(SALIDA)):
+				# Recoge la llave si la hay
+				nuevasLlaves = self.estado.llaves[:]
+				if nuevaPos in LLAVES:
+					nuevasLlaves[LLAVES.index(nuevaPos)] = True
+				# Se mueve
+				sucesores.append(node(self, 2, state(nuevaPos,self.estado.rocas[:],nuevasLlaves),heuristica))
+			
 		return sucesores
 	def insertarOrdenado(self, lista):
 		'''Inserta el nodo en `lista` ordenado de menor a mayor

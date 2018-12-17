@@ -9,6 +9,7 @@ import sys, time
 
 # Abrimos el archivo
 f = open(sys.argv[1],'r')
+heuristica = sys.argv[2]
 #f = open("lab_astar/lab3.map",'r')
 #f = open("customMaps/muchasRocas2.map",'r')
 archivo = f.read()
@@ -35,7 +36,7 @@ for i in range(len(archivo)):
 		fila.append(archivo[i][j] == '%' or archivo[i][j] == 'E' or archivo[i][j] == 'S')
 	MUROS.append(fila)
 # Creamos el nodo inicial
-I = node(None, 0, state(al, rocas, [False]*len(LLAVES)))
+I = node(None, 0, state(al, rocas, [False]*len(LLAVES)),heuristica)
 if CONFIG["interfaz"]:
 	import pygame
 	from interfaz import interfaz
@@ -63,7 +64,7 @@ while ABIERTA != [] and not EXITO:
 	# Si no
 	else:
 		# Expandir N generando el conjunto S de sucesores de N
-		S = N.genSucesores()
+		S = N.genSucesores(heuristica)
 		# Meter N en CERRADA 
 		CERRADA.append(N)
 		# Para cada sucesor s en S
