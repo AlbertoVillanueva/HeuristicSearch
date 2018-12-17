@@ -163,7 +163,7 @@ public class Paganitzu_Satisfacibilidad {
 		SelectChoicePoint<BooleanVar> select = new SimpleSelect<BooleanVar>(allVariables,new SmallestDomain<BooleanVar>(), new IndomainMin<BooleanVar>());
 		Boolean result = search.labeling(store, select);
 		int numHueco =0;
-		String fichero = args[0] + ".output"
+		String fichero = args[0] + ".output";
 		FileWriter laberinto = new FileWriter (fichero);
 		if (result) {
 			System.out.println("Solution: ");
