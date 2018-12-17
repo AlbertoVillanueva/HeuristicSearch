@@ -12,6 +12,7 @@ import org.jacop.search.SmallestDomain;
 
 public class Paganitzu_Satisfacibilidad {
 	public static void main(String args[]) throws IOException{
+		//Lectura del fichero
 		FileReader fileReader = new FileReader(args[0]);
 		BufferedReader bufferedReader = new BufferedReader(fileReader);
 		String line;
@@ -20,7 +21,7 @@ public class Paganitzu_Satisfacibilidad {
 		Store store = new Store();
 		SatWrapper satWrapper = new SatWrapper(); 
 		store.impose(satWrapper);
-
+		//Leer el fichero para determinar columnas, el numero de huecos que hay en el mapa y el numero de filas del mapa
 		while((line = bufferedReader.readLine()) != null) {
 			for(int columna = 0; columna < line.length();columna++){
 				columnas = columna;
@@ -32,12 +33,14 @@ public class Paganitzu_Satisfacibilidad {
 		}
 		bufferedReader.close();
 		fileReader.close();
+		//Volvemos a leer el fichero para determinar en que posicion estan lo huecos y se almacenan en un vector de posiciones deonde cada elemento del vector tiene la fila y columna del hueco
 		fileReader = new FileReader(args[0]);
 		bufferedReader = new BufferedReader(fileReader);
 		posicion_t huecos[] = new posicion_t[nHuecos];
 		char mapa[][] = new char [filas][columnas+1];
 		nHuecos = 0;
 		filas = 0;
+		//Leemos el fichero y guardamos en el vector de huecos la fila y columna que le corresponde y en una matriz guardamo el mapa entero (para poder generar al final el fichero de salida)
 		while((line = bufferedReader.readLine()) != null) {
 			for(int columna = 0; columna < (line.length());columna++){
 				if(line.charAt(columna) == ' '){
@@ -51,10 +54,12 @@ public class Paganitzu_Satisfacibilidad {
 		bufferedReader.close();
 		fileReader.close();
 		// 1. DECLARACION DE VARIABLES
+		//Varible destinada al personaje que sera un vector del tamaño del numero de huecos del mapa
 		BooleanVar Al[] = new BooleanVar[nHuecos];
 		for(int j = 0; j<nHuecos;j++){
 			Al[j] = new BooleanVar(store, ""+j);
 		}
+		//Variable destinada a las serpientes que sera una matriz de tamaño numero de serpientes(argumeton) x numero de huecos
 		BooleanVar Serpientes[][] = new BooleanVar[Integer.parseInt(args[1])][nHuecos];
 		for(int i = 0; i<Integer.parseInt(args[1]);i++){
 			for(int j = 0; j<nHuecos;j++){
@@ -158,7 +163,7 @@ public class Paganitzu_Satisfacibilidad {
 		SelectChoicePoint<BooleanVar> select = new SimpleSelect<BooleanVar>(allVariables,new SmallestDomain<BooleanVar>(), new IndomainMin<BooleanVar>());
 		Boolean result = search.labeling(store, select);
 		int numHueco =0;
-		String fichero = args[0] + ".output"
+		String fichero = args[0] + ".output";
 		FileWriter laberinto = new FileWriter (fichero);
 		if (result) {
 			System.out.println("Solution: ");
@@ -199,12 +204,14 @@ public class Paganitzu_Satisfacibilidad {
 		
 		System.out.println();
 	}
+	//Metodo que anade una clausula del tipo x v y
 	public static void addClause(SatWrapper satWrapper, int literal1, int literal2){
 		IntVec clause = new IntVec(satWrapper.pool);
 		clause.add(literal1);
 		clause.add(literal2);
 		satWrapper.addModelClause(clause.toArray());
 	}
+	//Método que anade clausulas del tipo (x v y v z v w ...)
 	public static void addOrMultiple(SatWrapper satWrapper, int[] array){
 		IntVec clause = new IntVec(satWrapper.pool);
 		for(int i = 0; i<array.length;i++){
@@ -213,6 +220,7 @@ public class Paganitzu_Satisfacibilidad {
 		satWrapper.addModelClause(clause.toArray());
 	}
 }
+//Clase creada para el almacenamiento de los huecos del mapa
 class posicion_t{
 	int fila,columna;
 	public posicion_t(int fila, int columna){
