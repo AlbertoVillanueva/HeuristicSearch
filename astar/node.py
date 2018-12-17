@@ -1,4 +1,5 @@
 from config import CONFIG
+import time
 MUROS=[]
 LLAVES = []
 SERPIENTES = []
@@ -37,28 +38,26 @@ class state():
 		return False
 	def hayLlave(self, pos):
 		'''Devuelve True si en el `estado` hay una llave en `pos`
-		pos es una tupla (x,y)
-		estado es un state
+		   pos es una tupla (x,y)
+		   estado es un state
 		'''
 		if pos in LLAVES:
 			return not self.llaves[LLAVES.index(pos)]
 		return False
 	def esFinal(self):
 		'''Devuelve True si `N` es un estado final
-		N es un node
+		   N es un node
 		'''
 		return self.al == tuple(SALIDA)
 	def esSitioPeligroso(self, pos):
-		'''Devuelve True si `pos` es una posicion peligrosa en `estado`
-		pos es una tupla (x,y)
-		estado es un state
+		'''Devuelve True si `pos` es una posicion peligrosa
+		   pos es una tupla (x,y)
 		'''
 		return self.haySerpienteIz(pos)[0] or self.haySerpienteDer(pos)[0]
 	def haySerpienteIz(self, pos):
-		'''Devuelve True si `pos` tiene una serpiente a la izquierda en `estado`
-		Devuelve la posicion de la serpiente
-		pos es una tupla (x,y)
-		estado es un state
+		'''Devuelve True si `pos` tiene una serpiente a la izquierda
+		   Devuelve la posicion de la serpiente
+		   pos es una tupla (x,y)
 		'''
 		i = pos[1]-1
 		# Nos movemos hacia la izquierda hasta encontrar el primer muro o roca
@@ -67,10 +66,9 @@ class state():
 		# Si es una serpiente es un sitio peligroso y devolvemos True
 		return (pos[0],i) in SERPIENTES, (pos[0],i)
 	def haySerpienteDer(self, pos):
-		'''Devuelve True si `pos` tiene una serpiente a la derecha en `estado`
-		Devuelve la posicion de la serpiente
-		pos es una tupla (x,y)
-		estado es un state
+		'''Devuelve True si `pos` tiene una serpiente a la derecha
+		   Devuelve la posicion de la serpiente
+		   pos es una tupla (x,y)
 		'''
 		i = pos[1]+1
 		# Nos movemos hacia la derecha hasta encontrar el primer muro o roca
@@ -107,28 +105,27 @@ class node():
 		# Se asigna la funcion de evaluacion calculando la heuristica
 		self.f = self.g + self.h()
 	def h(self):
-		'''Devuelve el valor heuristico para el `estado`
+		'''Devuelve el valor heuristico
 		'''
 		coste = 0
 		# si quedan llaves añadir la distancia hasta la llave mas lejana y la distancia desde esa llave hasta la salida
 		if self.estado.quedanLlaves():
 			llaveLejos = max((self.distancia(LLAVES[k],self.estado.al),LLAVES[k]) for k in range(len(LLAVES)) if not self.estado.llaves[k])
-			coste += 2*(llaveLejos[0]+ self.distancia(llaveLejos[1],SALIDA))
-			coste += 2*(len(self.estado.llaves)-sum(self.estado.llaves)-1)
+			coste += 2*max(llaveLejos[0] + self.distancia(llaveLejos[1],tuple(SALIDA)), len(self.estado.llaves)-sum(self.estado.llaves)-1)
 		# si no quedan llaves añadir la distancia hasta la salida
 		else:
-			coste += 2*self.distancia(self.estado.al,SALIDA)
+			coste += 2*self.distancia(self.estado.al,tuple(SALIDA))
 		# si queremos detectar las llaves que esten en peligro
 		if CONFIG["detectarLlavesPeligrosas"]:
 			# para cada llave
 			for i in range(len(LLAVES)):
 				# si hay serpientes y aun no hemos cogido esta llave añadir el minimo coste para tapar la(s) serpiente que ponen en peligro la llave
 				if SERPIENTES != [] and not self.estado.llaves[i]:
-					hay, serpiente = self.estado.haySerpienteIz(LLAVES[i])
-					if hay:
+					hayIz, serpiente = self.estado.haySerpienteIz(LLAVES[i])
+					if hayIz:
 						coste += 2*min(self.taparSerpiente(serpiente,LLAVES[i],r) for r in self.estado.rocas)
-					hay, serpiente = self.estado.haySerpienteDer(LLAVES[i])
-					if hay:
+					hayDer, serpiente = self.estado.haySerpienteDer(LLAVES[i])
+					if hayDer:
 						coste += 2*min(self.taparSerpiente(serpiente,LLAVES[i],r) for r in self.estado.rocas)
 		return coste
 	def distancia(self, pos1, pos2):
@@ -136,7 +133,25 @@ class node():
 		   pos1 es una tupla (x,y)
 		   pos2 es una tupla (x,y)
 		'''
-		return abs(pos1[0]-pos2[0])+abs(pos1[1]-pos2[1])
+		camino = abs(pos1[0]-pos2[0])+abs(pos1[1]-pos2[1])
+		if CONFIG["detectarMuros"]:
+			esquinaMenor = (min(pos1[0],pos2[0]),min(pos1[1],pos2[1]))
+			esquinaMayor = (max(pos1[0],pos2[0]),max(pos1[1],pos2[1]))
+			for i in range(esquinaMenor[0]+1,esquinaMayor[0]):
+				for j in range(esquinaMenor[1],esquinaMayor[1]+1):
+					if not MUROS[i][j]:
+						break
+				if MUROS[i][j]:
+					camino += 2
+					break
+			for j in range(esquinaMenor[1]+1,esquinaMayor[1]):
+				for i in range(esquinaMenor[0],esquinaMayor[0]+1):
+					if not MUROS[i][j]:
+						break
+				if MUROS[i][j]:
+					camino += 2
+					break
+		return camino
 	def taparSerpiente(self, serpiente, posicion, roca):
 		'''Devuelve la distancia que hay que mover `roca` para que tape la `serpiente` respecto a la `posicion`
 		   serpiente, posicion y roca son tuplas (x,y)
@@ -159,3 +174,106 @@ class node():
 				return True, i
 		# Si ningun estado era igual devolvemos Flase y None por posicion
 		return False, None
+	def genSucesores(self):
+		'''Devuelve una lista con los sucesores
+		'''
+		# Iniciamos la lista de sucesores vacia
+		sucesores = []
+		# Definimos los posibles movimientos que se pueden realizar
+		movimientos = [(1,0),(-1,0),(0,1),(0,-1)]
+		# Para casa posible movimiento m
+		for m in movimientos:
+			# Calculamos la nueva posicion para ese movimiento
+			nuevaPos = (self.estado.al[0]+m[0],self.estado.al[1]+m[1])
+			# Si tenemos todas las llaves y la nueva posicion es la SALIDA añadimos el descendiente
+			if not self.estado.quedanLlaves() and nuevaPos == tuple(SALIDA):
+				sucesores.append(node(self,2, state(nuevaPos,self.estado.rocas[:],self.estado.llaves[:])))
+			# Si en la nueva posicion no hay muros y no es un sitio peligroso
+			elif not MUROS[nuevaPos[0]][nuevaPos[1]]:
+				comprobarSerpientes = (m == movimientos[0])or(m==movimientos[1])
+				if comprobarSerpientes:
+					if self.estado.esSitioPeligroso(nuevaPos):
+						continue
+				# Si en la nueva posicion hay alguna roca
+				if nuevaPos in self.estado.rocas:
+					# Calculamos la posicion a la que la roca se moveria
+					siguientePos = (nuevaPos[0]+m[0],nuevaPos[1]+m[1])
+					# Si podemos moverla alli (Si no hay otras rocas, muros o llaves)
+					if not(siguientePos in self.estado.rocas or MUROS[siguientePos[0]][siguientePos[1]] or self.estado.hayLlave(siguientePos)):
+						# Calculamos las nuevas posiciones de las rocas y lo añadimos el descendiente
+						nuevasRocas = self.estado.rocas[:]
+						nuevasRocas.remove(nuevaPos)
+						nuevasRocas.append(siguientePos)
+						sucesores.append(node(self, 4, state(nuevaPos,nuevasRocas,self.estado.llaves[:])))
+				# SI en la nueva posicion no hay rocas
+				else:
+					# Añadimos el descendiente recogiendo las llaves que haya en la nueva posicion
+					nuevasLlaves = self.estado.llaves[:]
+					if nuevaPos in LLAVES:
+						nuevasLlaves[LLAVES.index(nuevaPos)] = True
+					sucesores.append(node(self, 2, state(nuevaPos,self.estado.rocas[:],nuevasLlaves)))
+		# Devolvemos los sucesores
+		return sucesores
+	def insertarOrdenado(self, lista):
+		'''Inserta el nodo en `lista` ordenado de menor a mayor
+		   En caso de empate inserta lo mas cercano al principio
+		   lista es una lista de node
+		'''
+		# si la lista esta vacia insertamos el nodo
+		if not len(lista):
+			lista.append(self)
+		else:
+			# Hacemos busqueda binaria hasta encontrar el valor mas cercano
+			# Empezamos buscando en toda la lista
+			primero = 0
+			ultimo = len(lista)-1
+			# Mientras no tengamos longitud 1 
+			while primero < ultimo:
+				# Calculamos la posicion media de la seccion en la que estamos
+				medio = primero+(ultimo-primero)//2
+				# Si hemos encontrado nuestro objetivo terminamos
+				if self.f == lista[medio].f:
+					primero=medio
+					break
+				# Si f del nodo es mas pequeño que el medio buscamos en la mitad anterior
+				elif self.f<lista[medio].f:
+					ultimo=medio-1
+				# Si f del nodo es mas grande que el medio buscamos en la mitad posterior
+				elif self.f>lista[medio].f:
+					primero=medio+1
+			# Si f del nodo es mas pequeño lo insertamos antes
+			if self.f<lista[primero].f:
+				lista.insert(primero, self)
+			# Si es mas grando lo insertamos despues
+			elif self.f>lista[primero].f:
+				lista.insert(primero+1, self)
+			# Si f es igual
+			else:
+				# Retrocedemos hasta el primero nodo que tenga la misma f
+				while lista[primero].f == self.f:
+					primero-=1
+					if primero == -1:
+						break
+				# Insertamos antes del primer nodo que es igual
+				lista.insert(primero+1,self)
+	def backtracking(self):
+		'''Devuelve una lista con el camino que ha hecho para llegar hasta este nodo
+		'''
+		path = []
+		nodo = self
+		while nodo != None:
+			path.append(nodo.estado.al)
+			#print(nodo.estado.al,"-->",nodo.h())
+			nodo = nodo.padre
+		return path[:0:-1]
+	def animar(self, ventana):
+		estados = []
+		nodo = self
+		while nodo != None:
+			estados.append(nodo.estado)
+			nodo = nodo.padre
+		estados = estados[::-1]
+		for e in estados:
+			ventana.vaciar()
+			ventana.draw(e)
+			time.sleep(CONFIG["velocidad"])

@@ -3,12 +3,12 @@ CONFIG = {
 	"crearOutput": False,
 	"crearStatistics": False,
 	# salida por pantalla
-	"imprimirOutput": True,
+	"imprimirOutput": False,
 	"imprimirStatistics": True,
 	# extra
 	"hayDiagonales": False,
 	# heuristicas
-	"detectarMuros": False,
+	"detectarMuros": True,
 	"detectarLlavesPeligrosas": True,
 	# interfaz
 	
@@ -17,5 +17,5 @@ CONFIG = {
 		###########
 		
 	"interfaz": False, 
-	"velocidad": 0.4
+	"velocidad": 0.2
 }
