@@ -10,8 +10,6 @@ import sys, time
 # Abrimos el archivo
 f = open(sys.argv[1],'r')
 heuristica = sys.argv[2]
-#f = open("lab_astar/lab3.map",'r')
-#f = open("customMaps/muchasRocas2.map",'r')
 archivo = f.read()
 f.close()
 archivo = archivo.split('\n')

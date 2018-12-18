@@ -118,22 +118,10 @@ class node():
 		# si quedan llaves añadir la distancia hasta la llave mas lejana y la distancia desde esa llave hasta la salida
 		if self.estado.quedanLlaves():
 			llaveLejos = max((self.distancia(LLAVES[k],self.estado.al),LLAVES[k]) for k in range(len(LLAVES)) if not self.estado.llaves[k])
-			coste += 2*max(llaveLejos[0] + self.distancia(llaveLejos[1],tuple(SALIDA)), len(self.estado.llaves)-sum(self.estado.llaves))
+			coste += 2*(llaveLejos[0] + self.distancia(llaveLejos[1],tuple(SALIDA)))
 		# si no quedan llaves añadir la distancia hasta la salida
 		else:
 			coste += 2*self.distancia(self.estado.al,tuple(SALIDA))
-		return coste
-	def h2(self):
-		'''Devuelve el valor heuristico usando la segunda heurística
-		'''
-		coste = 0
-		# si quedan llaves añadir la distancia hasta la llave mas lejana y la distancia desde esa llave hasta la salida
-		if self.estado.quedanLlaves():
-			llaveLejos = max((self.distancia(LLAVES[k],self.estado.al,detectarMuros=True),LLAVES[k]) for k in range(len(LLAVES)) if not self.estado.llaves[k])
-			coste += 2*max(llaveLejos[0] + self.distancia(llaveLejos[1],tuple(SALIDA),detectarMuros=True), len(self.estado.llaves)-sum(self.estado.llaves))
-		# si no quedan llaves añadir la distancia hasta la salida
-		else:
-			coste += 2*self.distancia(self.estado.al,tuple(SALIDA),detectarMuros=True)
 		# para cada llave
 		for i in range(len(LLAVES)):
 			# si hay serpientes y aun no hemos cogido esta llave añadir el minimo coste para tapar la(s) serpiente que ponen en peligro la llave
@@ -145,30 +133,50 @@ class node():
 				if hayDer:
 					coste += 2*min(self.taparSerpiente(serpiente,LLAVES[i],r) for r in self.estado.rocas)
 		return coste
-	def distancia(self, pos1, pos2, detectarMuros=False):
+	def h2(self):
+		'''Devuelve el valor heuristico usando la segunda heurística
+		'''
+		coste = 0
+		# si quedan llaves añadir la distancia hasta la llave mas lejana y la distancia desde esa llave hasta la salida
+		if self.estado.quedanLlaves():
+			llaveLejos = max((self.distancia(LLAVES[k],tuple(SALIDA)),LLAVES[k]) for k in range(len(LLAVES)) if not self.estado.llaves[k])
+			coste += 2*(llaveLejos[0] + self.distancia(llaveLejos[1],self.estado.al))
+		# si no quedan llaves añadir la distancia hasta la salida
+		else:
+			coste += 2*self.distancia(self.estado.al,tuple(SALIDA))
+		# para cada llave
+		for i in range(len(LLAVES)):
+			# si hay serpientes y aun no hemos cogido esta llave añadir el minimo coste para tapar la(s) serpiente que ponen en peligro la llave
+			if SERPIENTES != [] and not self.estado.llaves[i]:
+				hayIz, serpiente = self.estado.haySerpienteIz(LLAVES[i])
+				if hayIz:
+					coste += 2*min(self.taparSerpiente(serpiente,LLAVES[i],r) for r in self.estado.rocas)
+				hayDer, serpiente = self.estado.haySerpienteDer(LLAVES[i])
+				if hayDer:
+					coste += 2*min(self.taparSerpiente(serpiente,LLAVES[i],r) for r in self.estado.rocas)
+		return coste
+	def distancia(self, pos1, pos2):
 		'''Devuelve la distancia desde `pos1` hasta `pos2`
 		   pos1 es una tupla (x,y)
 		   pos2 es una tupla (x,y)
-		   por defecto hace la distancia Manhattan, pero si detectarMuros se pone en True tiene en cuante muros
 		'''
 		camino = abs(pos1[0]-pos2[0])+abs(pos1[1]-pos2[1])
-		if detectarMuros:
-			esquinaMenor = (min(pos1[0],pos2[0]),min(pos1[1],pos2[1]))
-			esquinaMayor = (max(pos1[0],pos2[0]),max(pos1[1],pos2[1]))
-			for i in range(esquinaMenor[0]+1,esquinaMayor[0]):
-				for j in range(esquinaMenor[1],esquinaMayor[1]+1):
-					if not MUROS[i][j]:
-						break
-				if MUROS[i][j]:
-					camino += 2
+		esquinaMenor = (min(pos1[0],pos2[0]),min(pos1[1],pos2[1]))
+		esquinaMayor = (max(pos1[0],pos2[0]),max(pos1[1],pos2[1]))
+		for i in range(esquinaMenor[0]+1,esquinaMayor[0]):
+			for j in range(esquinaMenor[1],esquinaMayor[1]+1):
+				if not MUROS[i][j]:
 					break
-			for j in range(esquinaMenor[1]+1,esquinaMayor[1]):
-				for i in range(esquinaMenor[0],esquinaMayor[0]+1):
-					if not MUROS[i][j]:
-						break
-				if MUROS[i][j]:
-					camino += 2
+			if MUROS[i][j]:
+				camino += 2
+				break
+		for j in range(esquinaMenor[1]+1,esquinaMayor[1]):
+			for i in range(esquinaMenor[0],esquinaMayor[0]+1):
+				if not MUROS[i][j]:
 					break
+			if MUROS[i][j]:
+				camino += 2
+				break
 		return camino
 	def taparSerpiente(self, serpiente, posicion, roca):
 		'''Devuelve la distancia que hay que mover `roca` para que tape la `serpiente` respecto a la `posicion`
