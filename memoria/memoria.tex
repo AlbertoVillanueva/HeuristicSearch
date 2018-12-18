@@ -223,7 +223,13 @@
 					\item Rocas: el conjunto formado por las posiciones de las rocas
 					\item Llaves: el conjunto formado por las posiciones de las llaves que quedan\footnote{El el código se ha implementado como una lista de booleanos ya que las llaves tienen una posicion estática, de esta forma, llavesi representa si la llave i-ésima se ha recogido ($\top$ es que se ha recogido, $\bot$ es que no)}
 				\end{itemize}
-				Las posiciones estan representadas de la forma: (fila, columna)
+				Las posiciones estan representadas de la forma: (fila, columna).\\
+				Y para complementarlo tendremos unos elementos globales para todos los estados:
+				\begin{itemize}
+					\item Muros: Conjunto con todas las posiciones a las que no se puede pasar, es decir muros, serpientes y la salida.
+					\item Serpientes: Conjunto con las posiciones de las serpientes.
+					\item Salida: Posicion en la que se encuentra la salida.
+				\end{itemize}
 			\subsubsection{Acciones y operadores}
 			Al puede hacer 4 movimientos, moverse hacia arriba, hacia abajo, hacia la izquierda y hacia la derecha. Para representar los cambios que hacen el moverse en una dirección sobre al se ha representado mediante las operaciones que se hacen en las coordenadas:
 			\begin{itemize}
@@ -257,15 +263,62 @@
 	\subsection{Analisis}
 		\subsubsection{Casos de prueba}
 		\subsubsection{Comparación de heurísticas}
+			Las dos heurísticas comparten 2 cosas; la funcion que usan para tomar las distancias y el coste que le añade para cubrir las serpientes que estan amenazando directamente a una llave.\\
+			\textbf{Función de las distancias, dist(a,b)}\\
+			Esta funcion es manhattan solo que intenta ser un poco más completa teniendo en cuenta algunos muros. La funcion se queda con el submapa conformado entre los dos puntos a y b entre los que se calcula la distancia y comprube si alguna fila o columna esta rellena por completo de muros. Si alguna fila estaba llena de muros se le suma 2 a la distancia manhattan y lo mismo para las filas. Esto se hace para indicar que Al va a tener que rodear de alguna forma ese muro.
+			\begin{figure}[h!]
+				\includegraphics[width=0.32\linewidth]{Horizontal.png}
+				\includegraphics[width=0.32\linewidth]{Vertical.png}
+				\includegraphics[width=0.32\linewidth]{HorizontalVertical.png}
+			\end{figure}
+			\\
+			\textbf{Cubrir Serpientes, cubrir(s,k)}\\
+			Esto es algo que se añade a ambas heuristicas luego el valor heurístico que devolverian las heurísticas sería $h_i = h_i'+cubrir\ serpientes$\\
+			Lo que hace esta parte es comprobar todas las llaves y si alguna esta siendo directamente amenazada por una serpiente, es decir, si hay una fila en la misma fila y no hay ninguna otra llave, piedra o muro entre medias, estima un coste necesrio para cubrir la serpiente y que deje de estar amenazada.\\
+			Esto se hace de la siguiente forma:
+			\[
+				cubrir(s,k) = 2*\min\limits_r^{rocas}
+				\bigg \{
+				\begin{tabular}{ll}
+					$\mid k_{fila}-r_{fila} \mid $& $Si\ r_{columna} \in (s_{columna}, k_{columna})$\\
+					$\min(dist(r,h_{iz}),dist(r,h_{der}))$&$ Si\ r_{columna} \notin (s_{columna}, k_{columna})$\\
+				\end{tabular}
+			\]
+			\begin{tabular}{ll}
+				k&: Posición de la llave a tapar\\
+				s&: Posición de la serpiente a tapar\\
+				$h_{iz}$&: El hueco inmediatamente a la derecha de la posición que esté mas \\
+				&  a la izquierda entre k y s\\
+				$h_{der}$&: El hueco inmediatamente a la izquierda de la posición que esté mas \\
+				&  a la derecha entre k y s\\
+				$k_{fila}$&: Fila de k\\
+				$k_{columna}$&: Columna de k
+			\end{tabular}\\
+			Es decir, para cada piedra calculamos la distacia que habria que moverla para tapar la linea de vision de la serpiente a la llave, si la columna de la piedra esta entre las columnas de la llave y la serpiente solo hay que moverla hacia abajo/arriba y si esta fuera de ese rango, hay que encontrar el camino mas corto para mover la piedra hasta el limite del rango de vision que este mas cerca.\\
+			Y luego lo multiplicamos por 2 para asimilarlo a los costes que se necesitan para moverse. Se usa 2 en vez de 4, que es lo que cuesta mover una roca, porque el coste añadido para mover una roca partiendo de que el movimiento se va a porducir, ya que en las heuristicas se tiene en cuenta movimiento y si aqui se usara 4, se podria estar teniendo en cuenta el coste del movimiento mas de una vez (una para el movimiento de la heuristica y otra para mover la piedra luego algo que tendria coste 4 le asignaria coste 6).\\
 			\textbf{Heurística 1}\\
-			man(al,km) = maxk llaves(man(al,k))\\
-			h1 = 2*max(man(al,km) + man(km,E),llaves que quedan) si quedan llaves\\
-				 = 2*man(al,E) si no quedan llaces\\
-			Es decir, 2 por el maximo enre la distancia manhattan hasta la llave mas lejana mas la distancia manhattan desde esa llave hasta la salida y las llaves que quedan.\\
-			Se usa esta heurística ya que es el maximo de 2 heuristicas mas simples luego se convierte en una heurística ligeramente mas fuerte.\\
+			Esta heurística calcula la distancia entre al y la llave mas lejana y desde la llave mas lejana hasta la salida, y si no hay llaves es la distancia desde al hasta la salida y luego lo multiplica por 2 ya que para una posicion cuesta 2.\\
+			$dist(al,k_m) = \max\limits_k^{llaves}(dist(al,k))$
+			\[
+			h_1'
+			\bigg \{
+				\begin{tabular}{ll}
+					$2*(dist(al,k_m) + dist(k_m,salida))$ &Si quedan llaves\\
+					$2*dist(al,salida)$ &Si no quedan llaves
+				\end{tabular}
+			\]
+			\\
 			\textbf{Heurística 2}\\
-			Esta heuristica es una mejora con respecto a la primera.\\
-			Para empezar, en vez de usar la distancia manhattan, usa una función modificada, al principio de la funcion, busca si en el submapa que se genera, hay algun muro vertical u horizontal, si hay un muro vertical le suma 2 a la distancia manhattan y si hay un muro horizontal le suma otros 2. Esto es para representar que no se puede recorrer con la distancia manhattan por en medio sino que hay que rodearlo.
+			Esta heurística es muy parecida a la primera pero en vez de calcular las cosas en torno a al, las calcula en torno a la salida, es decir, primero calcula la distancia hasta la llave que esta mas lejos de la salida y luego, desde esa llave, la distancia hasta al.
+			$dist(salida,k_m) = \max\limits_k^{llaves}(dist(salida,k))$
+			\[
+			h_2'
+			\bigg \{
+				\begin{tabular}{ll}
+					$2*(dist(salida,k_m) + dist(k_m,al))$ &si quedan llaves\\
+					$2*dist(salida,al)$ &si no quedan llaves
+				\end{tabular}
+			\]
 %------------------------------------------------------------------------------------------
 
 \end{document}
