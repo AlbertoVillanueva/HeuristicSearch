@@ -15,6 +15,7 @@
 \usepackage{multirow}
 \usepackage{caption}
 \usepackage{graphicx}
+\usepackage{subcaption}
 
 \hypersetup{
 	colorlinks,
@@ -213,7 +214,26 @@
 				\item Otra cosa que podemos observar en la tabla anterior es que en los casos en los que si se ha obtenido una solución no satisfacible (ya que el tamaño del mapa lo permitía) el tiempo que tarda en ejecutar es mucho mayor que el tiempo que se tarda en ejecutar para el caso más extremo en el que hay una serpiente por fila, esto es debido a que el algoritmo de resolución tiene que hacer todas las comprobaciones posibles para encontrar un modelo que determine una solución posible para esa situación.
 				\item Comprobando los resultados que se obtienen en todos los mapas se observa que Al siempre se encuentra en la última fila en la que haya un hueco y de ahí las serpientes quedan colocadas en las filas anteriores. También podemos observar que en todos los casos tanto Al como todas las serpientes aparecen en la casilla en la que pueden estar que está más a la izquierda del mapa. Estas dos situaciones son debidas a como está implementado el algoritmo de resolución para los problemas de satisfabilidad en la librería de Java utilizada.
 			\end{itemize}
-			Los mapas con los que se ha probado han sido los proporcionados por los profesores y anexados a la entrega.
+			Los mapas con los que se ha probado han sido anexados a la entrega y son los siguientes: \\
+			\begin{figure}[h!]
+				\begin{subfigure}[b]{0.45\linewidth}
+					\includegraphics[width=\linewidth]{sat/lab1.png}
+					\caption{Mapa 1}
+				\end{subfigure}
+				\begin{subfigure}[b]{0.54\linewidth}
+					\includegraphics[width=\linewidth]{sat/lab2.png}
+					\caption{Mapa 2}
+				\end{subfigure}
+				\begin{subfigure}[b]{0.40\linewidth}
+					\includegraphics[width=\linewidth]{sat/lab3.png}
+					\caption{Mapa 3}
+				\end{subfigure}
+				\begin{subfigure}[b]{0.59\linewidth}
+					\includegraphics[width=\linewidth]{sat/lab4.png}
+					\caption{Mapa 4}
+				\end{subfigure}
+			\end{figure}
+			\\
 	\section{Búsqueda heurística}
 		\subsection{Modelización}
 			\subsubsection{Representación de los estados}
