@@ -24,7 +24,7 @@ class state():
 		self.rocas = rocas
 		self.llaves = llaves
 	def igual(self, estado):
-		'''Devuelve True si `estado` es igual a esta instancia
+		'''Devuelve True si `estado` es igual
 		   estado es un state
 		'''
 		# Si todos los elementos del estado son iguales devuelve True, si no False
@@ -37,14 +37,14 @@ class state():
 				return True
 		return False
 	def hayLlave(self, pos):
-		'''Devuelve True si en el `estado` hay una llave en `pos`
+		'''Devuelve True si hay una llave en `pos`
 		   pos es una tupla (x,y)
 		'''
 		if pos in LLAVES:
 			return not self.llaves[LLAVES.index(pos)]
 		return False
 	def esFinal(self):
-		'''Devuelve True si `N` es un estado final
+		'''Devuelve True si es un estado final
 		   N es un node
 		'''
 		return self.al == tuple(SALIDA)
@@ -95,6 +95,7 @@ class node():
 		   padre es un puntero a una instancia de node
 		   c es un numero
 		   estado es un state
+		   heuristica es la heuristica que se usa
 		'''
 		# Se asigna el padre
 		self.padre = padre
@@ -191,8 +192,8 @@ class node():
 		else: 
 			return min(self.distancia(roca,(serpiente[0], huecoIz)),self.distancia(roca,(serpiente[0], huecoDer)))
 	def estaEn(self,l):
-		'''Devuelve True si el `estado` esta en la lista `l`
-		   Devuelve la posicion del estado en `l`, si `estado` no esta en `l` devuelve None
+		'''Devuelve True si esta en la lista `l`
+		   Devuelve la posicion del estado en `l`, si no esta en `l` devuelve None
 		   l es una lista de node
 		'''
 		# Iteramos por toda la lista
@@ -289,7 +290,6 @@ class node():
 		nodo = self
 		while nodo != None:
 			path.append(nodo.estado.al)
-			#print(nodo.estado.al,"-->",nodo.h())
 			nodo = nodo.padre
 		return path[:0:-1]
 	def animar(self, ventana):

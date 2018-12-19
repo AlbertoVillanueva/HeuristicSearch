@@ -1,0 +1,18 @@
+\BOOKMARK [1][-]{section.1}{Intorducci\363n}{}% 1
+\BOOKMARK [1][-]{section.2}{Satisfabilidad l\363gica}{}% 2
+\BOOKMARK [2][-]{subsection.2.1}{Modelizaci\363n}{section.2}% 3
+\BOOKMARK [3][-]{subsubsection.2.1.1}{Variables}{subsection.2.1}% 4
+\BOOKMARK [3][-]{subsubsection.2.1.2}{Cl\341usulas}{subsection.2.1}% 5
+\BOOKMARK [2][-]{subsection.2.2}{Evaluaci\363n}{section.2}% 6
+\BOOKMARK [1][-]{section.3}{B\372squeda heur\355stica}{}% 7
+\BOOKMARK [2][-]{subsection.3.1}{Modelizaci\363n}{section.3}% 8
+\BOOKMARK [3][-]{subsubsection.3.1.1}{Representaci\363n de los estados}{subsection.3.1}% 9
+\BOOKMARK [3][-]{subsubsection.3.1.2}{Acciones y operadores}{subsection.3.1}% 10
+\BOOKMARK [3][-]{subsubsection.3.1.3}{Estado Inicial}{subsection.3.1}% 11
+\BOOKMARK [3][-]{subsubsection.3.1.4}{Estado Final}{subsection.3.1}% 12
+\BOOKMARK [3][-]{subsubsection.3.1.5}{heuristicas}{subsection.3.1}% 13
+\BOOKMARK [2][-]{subsection.3.2}{Analisis}{section.3}% 14
+\BOOKMARK [3][-]{subsubsection.3.2.1}{Casos de prueba}{subsection.3.2}% 15
+\BOOKMARK [3][-]{subsubsection.3.2.2}{Comparaci\363n de heur\355sticas}{subsection.3.2}% 16
+\BOOKMARK [1][-]{section.4}{Parte extra}{}% 17
+\BOOKMARK [1][-]{section.5}{Notas sobre el c\363digo}{}% 18

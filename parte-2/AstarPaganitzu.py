@@ -115,6 +115,6 @@ if EXITO:
 				if event.type == pygame.QUIT:
 					# change the value to False, to exit the main loop
 					ventana.running = False
-# Si no imprimir "Fracaso"
+# Si no, imprimir "Fracaso"
 else:
 	print("Fracaso")
