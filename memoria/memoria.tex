@@ -456,6 +456,9 @@
 			\end{figure}
 			
 		\subsubsection{Comparación de heurísticas}
+			Como las 2 heurísticas son tan parecidas es complicado compararlas, las 2 implementan la misma idea de fondo solo que con perspectivas distintas. A la hora de crear heuristicas se contemplaron varias posibilidades como el numero de llaves * 2 o poner la misma heuristica pero en una de ellas con la distancia manhattan, pero tras pensarlo y hacer algunas pruebas, la de las llaves solo era mejor para mapas muy especificos y la de la distancia manhattan era simplemente peor (ya que nuestra función de calcular distancia es manhattan pero mejorado) luego no nos parecia util hacer comparatibas entre una heuristica y su mejora, ya que su mejora va a ser claramente mejor.\\
+			Por este motivo no se ve demasiada diferencia (en algunos casos ninguna) entre las 2 heuristicas pero lo que si que podemos notar es que la primera es mejor para casi todos los casos, para todos menos para uno. Esto nos podria llegar a deducir que la primera heuristica es mejor pero lo que esta ocurriendo de verdad es que depende del mapa. Para algunos mapas sera mejor la primera y para otros sera mejor la segunda. Una forma teorica de elegir siempre el mejor seria elegir el maximo de ambas, sin embargo esto nos haria que se tardase el doble de tiempo, luego en la practica no es util.\\
+			Una cosa que si que se puede ver del funcionamiento de ambas heuristicas es que los nodos expandidos y el tiempo, son claramente inferiores con respecto a los que crea y tarda dijkstra en los mapas en los que las llaves estan directamente amenazadas por una serpiente, esto se debe a la parte de la heuristica que se encarga de estimar un coste de mover las piedras y por lo tanto es mas informada.
 	\section{Parte extra}
 	Para añadir la parte adicional se han tenido que añadir movimientos en la parte de acciones y operadores y se ha cambiado una parte de las heuristicas.
 		\subsection{Acciones y operadores}
@@ -501,22 +504,25 @@
 				\multirow{3}{*}{\textbf{Mapa 5}} & h1 & 642.194 s & 25 256\\
 												& h2 & 673.194 s & 25 256\\
 				\hline
-				\multirow{3}{*}{\textbf{Mapa 6}} & h1 & 58.091 s & 9 097\\
-												& h2 & 58.308 s & 9 251\\
+				\multirow{3}{*}{\textbf{Mapa 6}} & h1 & 860.009 s & 25 821\\
+												& h2 & 1 317.874 s & 28 540\\
 				\hline
 			\end{tabular}
 		\end{center}
 		Como se puede ver, para todos los casos se tarda más, esto es porque al haber mas posibles acciones, hay mas sucesores, muchos de los cuales se repiten, y tiene que estar haciendo muchas comprobaciones sobre cerrada y abierta para ver si cada uno de los nodos esta, ademas de calcular la heuristica varias veces mas para un mismo nodo.
 	\section{Notas sobre el código}
-	\begin{itemize}
-		\item Para todas las partes se ha incluido un arhivo bash script llamado run.sh que se encarga de llamar al archivo correspondiente con el compilador/interprete necesario.
 		\begin{itemize}
-			\item parte 1: ./run.sh <laberinto>\ <n>
-			\item parte 2 y opcional: ./run.sh <laberinto>\ <heuristica>
+			\item Para todas las partes se ha incluido un arhivo bash script llamado run.sh que se encarga de llamar al archivo correspondiente con el compilador/interprete necesario.
+			\begin{itemize}
+				\item parte 1: ./run.sh <laberinto>\ <n>
+				\item parte 2 y opcional: ./run.sh <laberinto>\ <heuristica>
+			\end{itemize}
+			\item Para la parte 1, ademas se ha incluido un archivo para compilar el código primero: compile.sh, que no toma ningún argumento.
+			\item Para la parte de busqueda se ha implementado una pequeña interfaz que por defecto no esta activada, para activarla hay que cambiar el valor con el nombre de ''interfaz'' a True en el archivo config.py. Para que funcione hay que tener instalada la version de pygame para python 3.6.7
 		\end{itemize}
-		\item Para la parte de busqueda se ha implementado una pequeña interfaz que por defecto no esta activada, para activarla hay que cambiar el valor con el nombre de ''interfaz'' a True en el archivo config.py. Para que funcione hay que tener instalada la version de pygame para python 3.6.7
-	\end{itemize}
-	
+	\section{Conclusiones}
+		La práctica nos ha llevado a la realización de modelos de satisfabilidad lógica relativamente complejos y la programación del algoritmo A* y la creacion de heuristicas. Con ello hemos podido ver como funciona de fondo el algoritmo A* y lo importante que es tener una buena heurística ya que pensando una relativamente sencilla se tarda menos que intentandolo resolver directamente con fuerza bruta.\\
+		Lo que resultó más complicado en la pracitca fue encontrar los pequeños errores que se habian cometido en la programación del algoritmo ya que en algunos casos se tenia que seguir la evaluación de cada nodo hasta encontrar el fallo en arboles, que algunas veces, podian llegar a ser muy grandes.
 
 %------------------------------------------------------------------------------------------
 
