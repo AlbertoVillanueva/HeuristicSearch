@@ -239,7 +239,7 @@
 					\caption{Mapa 4}
 				\end{subfigure}
 			\end{figure}
-			\\
+	\newpage
 	\section{Búsqueda heurística}
 		\subsection{Modelización}
 			\subsubsection{Representación de los estados}
@@ -247,7 +247,7 @@
 				\begin{itemize}
 					\item Al: es la posición de Al
 					\item Rocas: el conjunto formado por las posiciones de las rocas
-					\item Llaves: el conjunto formado por las posiciones de las llaves que quedan\footnote{El el código se ha implementado como una lista de booleanos ya que las llaves tienen una posicion estática, de esta forma, llavesi representa si la llave i-ésima se ha recogido ($\top$ es que se ha recogido, $\bot$ es que no)}
+					\item Llaves: el conjunto formado por las posiciones de las llaves que quedan\footnote{El el código se ha implementado como una lista de booleanos ya que las llaves tienen una posicion estática, de esta forma, $llaves_i$ representa si la llave i-ésima se ha recogido ($\top$ es que se ha recogido, $\bot$ es que no)}
 				\end{itemize}
 				Las posiciones estan representadas de la forma: (fila, columna).\\
 				Y para complementarlo tendremos unos elementos globales para todos los estados:
@@ -270,20 +270,20 @@
 			De esta forma las acciones y operadores quedarían definidos de la siguiente forma:\\
 			\textbf{Para los movimientos verticales (Arriba y Abajo)}
 			\begin{itemize}
-				\item precondiciones: $(Movimiento(Al) \notin muros, rocas \land Movimiento(Al)\ no\ es peligroso) \lor (llaves = \emptyset \land Movimiento(Al) = salida)$\\
+				\item precondiciones: $(Movimiento(Al) \notin muros, rocas \land Movimiento(Al)\ no\ es peligroso) \lor (llaves = \emptyset \land Movimiento(Al) = salida)$\\Si la nueva posicion no es un muro o una roca y no es un sitio peligroso o es la salida y se puede entrar en ella\\
 				$\implies Al = Movimiento(Al)$\\
 				$\implies llaves = llaves\setminus Movimiento(Al)$
-				\item precondiciones: $Movimiento(Al) \in rocas \land Movimiento(Movimiento(Al)) \notin rocas, llaves, muros$\\
+				\item precondiciones: $Movimiento(Al) \in rocas \land Movimiento(Movimiento(Al)) \notin rocas, llaves, muros$\\Si la nueva posicion es una roca y la siguiente posicion es esa direccion no es una roca, un muro, o una llave\\
 				$\implies Al = Movimiento(Al)$\\
 				$\implies rocas = rocas\setminus Movimiento(Al)$\\
 				$\implies rocas = rocas \cup Movimiento(Movimiento(Al))$
 			\end{itemize}
 			\textbf{Para los movimientos horizontales (Izquierda y Derecha)}
 			\begin{itemize}
-				\item precondiciones: $Movimiento(Al) \notin muros, rocas \lor (llaves = \emptyset \land Movimiento(Al) = salida)$\\
+				\item precondiciones: $Movimiento(Al) \notin muros, rocas \lor (llaves = \emptyset \land Movimiento(Al) = salida)$\\Si la nueva posicion no es un muro o una roca o es la salida y se puede entrar en ella\\
 				$\implies Al = Movimiento(Al)$\\
 				$\implies llaves = llaves\setminus Movimiento(Al)$
-				\item precondiciones: $Movimiento(Al) \in rocas \land Movimiento(Movimiento(Al)) \notin rocas, llaves, muros$\\
+				\item precondiciones: $Movimiento(Al) \in rocas \land Movimiento(Movimiento(Al)) \notin rocas, llaves, muros$\\Si la nueva posicion es una roca y la siguiente posicion es esa direccion no es una roca, un muro, o una llave\\
 				$\implies Al = Movimiento(Al)$\\
 				$\implies rocas = rocas\setminus Movimiento(Al)$\\
 				$\implies rocas = rocas \cup Movimiento(Movimiento(Al))$
@@ -471,7 +471,7 @@
 			\end{itemize}
 			Y los operadores quedarian descritos como:
 			\begin{itemize}
-				\item precondiciones: $Movimiento(Al) \notin muros, rocas \land \neg((al_{fila},Movimiento(Al)_{columna}) \in muros \lor rocas  \land (Movimiento(al)_{fila},Al_{columna}) \in muros \lor rocas)\lor (llaves = \emptyset \land Movimiento(Al) = salida)$\\
+				\item precondiciones: $Movimiento(Al) \notin muros, rocas \land \neg((al_{fila},Movimiento(Al)_{columna}) \in muros \lor rocas  \land (Movimiento(al)_{fila},Al_{columna}) \in muros \lor rocas)\lor (llaves = \emptyset \land Movimiento(Al) = salida)$\\Si la siguiente posicion no es un muro o una roca y alguna de las 2 posiciones directamente adyacentes en esa direccion no son ni rocas ni muroso o  esa posicion es la salida y se puede acceder a ella
 				$\implies Al = Movimiento(Al)$\\
 				$\implies llaves = llaves\setminus Movimiento(Al)$
 			\end{itemize}
