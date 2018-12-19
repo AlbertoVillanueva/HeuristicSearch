@@ -327,7 +327,7 @@
 				$k_{fila}$&: Fila de k\\
 				$k_{columna}$&: Columna de k
 			\end{tabular}\\
-			Es decir, para cada roca calculamos la distacia que habría que moverla para tapar la línea de visión de la serpiente a la llave, si la columna de la roca esta entre las columnas de la llave y la serpiente solo hay que moverla hacia abajo/arriba y si esta fuera de ese rango, hay que encontrar el camino más corto para mover la roca hasta el límite del rango de visión que este más cerca.\\
+			Es decir, para cada roca calculamos la distancia que habría que moverla para tapar la línea de visión de la serpiente a la llave, si la columna de la roca esta entre las columnas de la llave y la serpiente solo hay que moverla hacia abajo/arriba y si esta fuera de ese rango, hay que encontrar el camino más corto para mover la roca hasta el límite del rango de visión que este más cerca.\\
 			Y luego lo multiplicamos por 2 para asimilarlo a los costes que se necesitan para moverse. Se usa 2 en vez de 4, que es lo que cuesta mover una roca, porque el coste añadido para mover una roca partiendo de que el movimiento se va a porducir, ya que en las heurísticas se tiene en cuenta movimiento y si aquí se usara 4, se podría estar teniendo en cuenta el coste del movimiento más de una vez (una para el movimiento de la heurística y otra para mover la roca luego algo que tendría coste 4 le asignaria coste 6).\\
 			\\
 			\textbf{Heurística 1}\\
