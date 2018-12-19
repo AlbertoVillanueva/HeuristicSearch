@@ -58,7 +58,7 @@
 	
 	\HRule\\[0.4cm]
 	
-	{\huge\bfseries Práctica: Programación Lineal}\\[0.4cm] % Title of your document
+	{\huge\bfseries Práctica: Satisfabilidad y Búsqueda}\\[0.4cm] % Title of your document
 	
 	\HRule\\[1.5cm]
 	
@@ -99,7 +99,7 @@
 	\pagenumbering{arabic}
 
 %------------------------------------------------------------------------------------------
-	\section{Intorducción}
+	\section{Introducción}
 	Este documento está destinado a la explicación de los contenidos de la práctica. Esta práctica se divide en tres partes, dos partes obligatorias y una parte opcional. La primera parte se trata de un problema de satisfabilidad lógica en el cual hay que colocar a un personaje y unas serpientes en un mapa cumpliendo una serie de restricciones, para ello se explica la modelización que se ha llevado a cabo y un pequeño análisis de los resultados que se han obtenido. La segunda y tercera parte consiste en una búsqueda heurística en la que un personaje tiene que coger las llaves de un mapa, evitando las serpientes, para poder llegar a la salida. Para ello se explican la modelización que se ha llevado a cabo, las heurísticas desarrolladas y un análisis de los resultados. 
 	\section{Satisfabilidad lógica}
 		\subsection{Modelización}
@@ -195,7 +195,7 @@
 				\hline
 				\textbf{Mapa 2}&7x12&3&0.09 s&Se colocan correctamente las serpientes y Al\\
 				\hline
-				\textbf{Mapa 2}&7x12&5&0.9 s&SNo satisfacible\\
+				\textbf{Mapa 2}&7x12&5&0.9 s&No satisfacible\\
 				\hline
 				\textbf{Mapa 3}&10x17&1&0.1 s&Se colocan correctamente las serpientes y Al\\
 				\hline
@@ -292,11 +292,11 @@
 			El estado inicial tiene a Al, las rocas y las llaves\footnote{En nuestra implementación es un conjunto con una posición por cada llave que hay en el mapa donde esta todo como $\bot$, ya que aun no ha recogido ninguna.} en sus posiciones iniciales.
 		\subsubsection{Estado Final}
 			Dado que limitamos el poder entrar en la casilla de salida para que solo entren si tienen todas las llaves, solo hay que comprobar que el estado este en la misma posición que la salida para que sea un estado final.
-		\subsubsection{heurísticas}
+		\subsubsection{Heurísticas}
 		Las dos heurísticas comparten 2 cosas; la función que usan para tomar las distancias y el coste que le añade para cubrir las serpientes que estan amenazando directamente a una llave.\\
 			\\
 			\textbf{Función de las distancias, dist(a,b)}\\
-			Esta función es manhattan solo que intenta ser un poco más completa teniendo en cuenta algunos muros. La función se queda con el submapa conformado entre los dos puntos a y b entre los que se calcula la distancia y comprube si alguna fila o columna esta rellena por completo de muros. Si alguna fila estaba llena de muros se le suma 2 a la distancia manhattan y lo mismo para las filas. Esto se hace para indicar que Al va a tener que rodear de alguna forma ese muro.
+			Esta función es manhattan solo que intenta ser un poco más completa teniendo en cuenta algunos muros. La función se queda con el submapa conformado entre los dos puntos a y b entre los que se calcula la distancia y compruebe si alguna fila o columna esta rellena por completo de muros. Si alguna fila estaba llena de muros se le suma 2 a la distancia manhattan y lo mismo para las filas. Esto se hace para indicar que Al va a tener que rodear de alguna forma ese muro.
 			\begin{figure}[h!]
 				\centering
 				\includegraphics[width=0.2\linewidth]{Horizontal.png}
@@ -304,9 +304,10 @@
 				\includegraphics[width=0.2\linewidth]{HorizontalVertical.png}
 			\end{figure}
 			\\
+			\\
 			\textbf{Cubrir Serpientes, cubrir(s,k)}\\
 			Esto es algo que se añade a ambas heurísticas luego el valor heurístico que devolverían las heurísticas sería $h_i = h_i'+cubrir\ serpientes$\\
-			Lo que hace esta parte es comprobar todas las llaves y si alguna esta siendo directamente amenazada por una serpiente, es decir, si hay una fila en la misma fila y no hay ninguna otra llave, roca o muro entre medias, estima un coste necesrio para cubrir la serpiente y que deje de estar amenazada.\\
+			Lo que hace esta parte es comprobar todas las llaves y si alguna esta siendo directamente amenazada por una serpiente, es decir, si hay una fila en la misma fila y no hay ninguna otra llave, roca o muro entre medias, estima un coste necesario para cubrir la serpiente y que deje de estar amenazada.\\
 			Esto se hace de la siguiente forma:
 			\[
 				cubrir(s,k) = 2*\min\limits_r^{rocas}
@@ -326,8 +327,8 @@
 				$k_{fila}$&: Fila de k\\
 				$k_{columna}$&: Columna de k
 			\end{tabular}\\
-			Es decir, para cada roca calculamos la distacia que habria que moverla para tapar la linea de vision de la serpiente a la llave, si la columna de la roca esta entre las columnas de la llave y la serpiente solo hay que moverla hacia abajo/arriba y si esta fuera de ese rango, hay que encontrar el camino más corto para mover la roca hasta el límite del rango de vision que este más cerca.\\
-			Y luego lo multiplicamos por 2 para asimilarlo a los costes que se necesitan para moverse. Se usa 2 en vez de 4, que es lo que cuesta mover una roca, porque el coste añadido para mover una roca partiendo de que el movimiento se va a porducir, ya que en las heurísticas se tiene en cuenta movimiento y si aquí se usara 4, se podria estar teniendo en cuenta el coste del movimiento más de una vez (una para el movimiento de la heurística y otra para mover la roca luego algo que tendria coste 4 le asignaria coste 6).\\
+			Es decir, para cada roca calculamos la distacia que habría que moverla para tapar la línea de visión de la serpiente a la llave, si la columna de la roca esta entre las columnas de la llave y la serpiente solo hay que moverla hacia abajo/arriba y si esta fuera de ese rango, hay que encontrar el camino más corto para mover la roca hasta el límite del rango de visión que este más cerca.\\
+			Y luego lo multiplicamos por 2 para asimilarlo a los costes que se necesitan para moverse. Se usa 2 en vez de 4, que es lo que cuesta mover una roca, porque el coste añadido para mover una roca partiendo de que el movimiento se va a porducir, ya que en las heurísticas se tiene en cuenta movimiento y si aquí se usara 4, se podría estar teniendo en cuenta el coste del movimiento más de una vez (una para el movimiento de la heurística y otra para mover la roca luego algo que tendría coste 4 le asignaria coste 6).\\
 			\\
 			\textbf{Heurística 1}\\
 			Esta heurística calcula la distancia entre al y la llave más lejana y desde la llave más lejana hasta la salida, y si no hay llaves es la distancia desde al hasta la salida y luego lo multiplica por 2 ya que para una posición cuesta 2.\\
@@ -425,7 +426,7 @@
 				\item La complejidad del problema crece principalmente con el número de huecos, rocas y llaves en ese orden de impacto.
 				\item La salida crea una especie de muro invisible ya que en cuanto se tengan todas las llaves, suponiendo un espacio abierto, nunca se va a usar la parte del lado contrario del muro porque se llegará primero a la salida, esto se puede ver facilmente en el primer mapa ya que todos los elementos relevantes estan a la izquierda de la salida asi que si reducimos nuestros posibles estados eliminando los huecos de la parte de la derecha nos quedaría como número de posibles estados 312 que se acerca mucho más a la realidad que el 1012 estimado anteriormente luego, cuanto más cerca este la salida de los elementos pertinentes en el mapa, principalmente las llaves, antes se va a encontrar la salida, y se van a expandir menos nodos.
 				\item El mapa 4 limita mucho los descendientes que se pueden crear, por ello la estimación que hemos hecho es muy similar a la expansion de nodos que hace una búsqueda de fuerza bruta.
-				\item La búsqueda por fuerza bruta en el mapa 3 y 6 expande significantemente menos nodos que los que el numero de nodos estimados, eso es porque estos mapas contienen 2 serpientes y las serpientes hacen que muchos nodos no sean posibles y limita los sucesores que algunos nodos generan eliminando los posibles huecos que puede haber para al, luego, si aumenta el numero de serpientes la complejidad del problema disminuye siempre que siga siendo satisfacible y no aumente el numero de rocas.
+				\item La búsqueda por fuerza bruta en el mapa 3 y 6 expande significantemente menos nodos que los que el número de nodos estimados, eso es porque estos mapas contienen 2 serpientes y las serpientes hacen que muchos nodos no sean posibles y limita los sucesores que algunos nodos generan eliminando los posibles huecos que puede haber para al, luego, si aumenta el número de serpientes la complejidad del problema disminuye siempre que siga siendo satisfacible y no aumente el número de rocas.
 			\end{itemize}
 			Los mapas con los que se ha hecho el análisis han sido anexados a la entrega y son:\\
 			\begin{figure}[H]
@@ -456,8 +457,8 @@
 			\end{figure}
 			
 		\subsubsection{Comparación de heurísticas}
-			Como las 2 heurísticas son tan parecidas es complicado compararlas, las 2 implementan la misma idea de fondo solo que con perspectivas distintas. A la hora de crear heurísticas se contemplaron varias posibilidades como el numero de llaves * 2 o poner la misma heurística pero en una de ellas con la distancia manhattan, pero tras pensarlo y hacer algunas pruebas, la de las llaves solo era mejor para mapas muy especificos y la de la distancia manhattan era simplemente peor (ya que nuestra función de calcular distancia es manhattan pero mejorado) luego no nos parecia util hacer comparatibas entre una heurística y su mejora, ya que su mejora va a ser claramente mejor.\\
-			Por este motivo no se ve demasiada diferencia (en algunos casos ninguna) entre las 2 heurísticas pero lo que si que podemos notar es que la primera es mejor para casi todos los casos, para todos menos para uno. Esto nos podria llegar a deducir que la primera heurística es mejor pero lo que esta ocurriendo de verdad es que depende del mapa. Para algunos mapas sera mejor la primera y para otros sera mejor la segunda. Una forma teorica de elegir siempre el mejor seria elegir el máximo de ambas, sin embargo esto nos haría que se tardase el doble de tiempo, luego en la practica no es util.\\
+			Como las 2 heurísticas son tan parecidas es complicado compararlas, las 2 implementan la misma idea de fondo solo que con perspectivas distintas. A la hora de crear heurísticas se contemplaron varias posibilidades como el número de llaves * 2 o poner la misma heurística pero en una de ellas con la distancia manhattan, pero tras pensarlo y hacer algunas pruebas, la de las llaves solo era mejor para mapas muy especificos y la de la distancia manhattan era simplemente peor (ya que nuestra función de calcular distancia es manhattan pero mejorado) luego no nos parecía útil hacer comparativas entre una heurística y su mejora, ya que su mejora va a ser claramente mejor.\\
+			Por este motivo no se ve demasiada diferencia (en algunos casos ninguna) entre las 2 heurísticas pero lo que si que podemos notar es que la primera es mejor para casi todos los casos, para todos menos para uno. Esto nos podría llegar a deducir que la primera heurística es mejor pero lo que esta ocurriendo de verdad es que depende del mapa. Para algunos mapas sera mejor la primera y para otros sera mejor la segunda. Una forma teórica de elegir siempre el mejor seria elegir el máximo de ambas, sin embargo esto nos haría que se tardase el doble de tiempo, luego en la practica no es útil.\\
 			Una cosa que si que se puede ver del funcionamiento de ambas heurísticas es que los nodos expandidos y el tiempo, son claramente inferiores con respecto a los que crea y tarda dijkstra en los mapas en los que las llaves estan directamente amenazadas por una serpiente, esto se debe a la parte de la heurística que se encarga de estimar un coste de mover las rocas y por lo tanto es más informada.
 	\section{Parte extra}
 	Para añadir la parte adicional se han tenido que añadir movimientos en la parte de acciones y operadores y se ha cambiado una parte de las heurísticas.
@@ -471,15 +472,15 @@
 			\end{itemize}
 			Y los operadores quedarían descritos como:
 			\begin{itemize}
-				\item precondiciones: $Movimiento(Al) \notin muros, rocas \land \neg((al_{fila},Movimiento(Al)_{columna}) \in muros \lor rocas  \land (Movimiento(al)_{fila},Al_{columna}) \in muros \lor rocas)\lor (llaves = \emptyset \land Movimiento(Al) = salida)$\\Si la siguiente posición no es un muro o una roca y alguna de las 2 posiciones directamente adyacentes en esa dirección no son ni rocas ni muroso o  esa posición es la salida y se puede acceder a ella
+				\item precondiciones: $Movimiento(Al) \notin muros, rocas \land \neg((al_{fila},Movimiento(Al)_{columna}) \in muros \lor rocas  \land (Movimiento(al)_{fila},Al_{columna}) \in muros \lor rocas)\lor (llaves = \emptyset \land Movimiento(Al) = salida)$\\Si la siguiente posición no es un muro o una roca y alguna de las 2 posiciones directamente adyacentes en esa dirección no son ni rocas ni muros o  esa posición es la salida y se puede acceder a ella
 				$\implies Al = Movimiento(Al)$\\
 				$\implies llaves = llaves\setminus Movimiento(Al)$
 			\end{itemize}
-		\subsection{heurísticas}
+		\subsection{Heurísticas}
 			Los cambios aquí han sido cambiar la función de distancias por:\\
 			$$\min(f,c)-1 + \mid f-c\mid$$
-			f: numero de filas entre las 2 posiciones\\
-			c: numero de columnas entre las 2 posiciones\\
+			f: número de filas entre las 2 posiciones\\
+			c: número de columnas entre las 2 posiciones\\
 			\\
 			Y en la función para calcular la distancia para mover las rocas se ha cambiado a la distancia manhattan (ya que no puedes mover las rocas diagonalmente).\\
 		\subsection{Análisis}
