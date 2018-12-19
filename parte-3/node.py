@@ -239,7 +239,7 @@ class node():
 			lateral1 = (self.estado.al[0],self.estado.al[1]+d[1])
 			lateral2 = (self.estado.al[0]+d[0],self.estado.al[1])
 			# si se cumplen las precondiciones
-			if (not MUROS[nuevaPos[0]][nuevaPos[1]] and not((MUROS[lateral1[0]][lateral1[1]] or lateral1 in self.estado.rocas) and (MUROS[lateral2[0]][lateral2[1]] or lateral2 in self.estado.rocas)) and not self.estado.esSitioPeligroso(nuevaPos)) or (not self.estado.quedanLlaves() and nuevaPos == tuple(SALIDA)):
+			if (nuevaPos not in self.estado.rocas and not MUROS[nuevaPos[0]][nuevaPos[1]] and not((MUROS[lateral1[0]][lateral1[1]] or lateral1 in self.estado.rocas) and (MUROS[lateral2[0]][lateral2[1]] or lateral2 in self.estado.rocas)) and not self.estado.esSitioPeligroso(nuevaPos)) or (not self.estado.quedanLlaves() and nuevaPos == tuple(SALIDA)):
 				# Recoge la llave si la hay
 				nuevasLlaves = self.estado.llaves[:]
 				if nuevaPos in LLAVES:
