@@ -110,6 +110,8 @@ class node():
 			self.f = self.g + self.h1()
 		elif heuristica == "h2":
 			self.f = self.g + self.h2()
+		elif heuristica == "djk":
+			self.f = self.g
 
 	def h1(self):
 		'''Devuelve el valor heuristico usando la primera heurística

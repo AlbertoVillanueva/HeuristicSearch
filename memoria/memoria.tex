@@ -16,6 +16,8 @@
 \usepackage{caption}
 \usepackage{graphicx}
 \usepackage{subcaption}
+\usepackage{float}
+\usepackage[margin=2.5cm]{geometry}
 
 \hypersetup{
 	colorlinks,
@@ -116,7 +118,7 @@
 				\item h1,j: Columna j del hueco h1. Para h2,j tiene el mismo significado.
 				\item N: Conjunto de las serpientes que hay
 			\end{itemize}
-			\textbf{Un hueco por personaje}\\\\
+			\textbf{Un hueco por personaje}\\
 			Aunque no aparece en el enunciado otra restricción que nos encotramos es que no puede haber más de un personaje en el mismo hueco. Para tratar esa restricción se crea la siguiente cláusula en la que tan solo está implicado Al (el personaje):
 			\begin{equation*}
 				A_{h_1} \implies \bigwedge\limits_{h_2}^H \neg A_{h_2}; h_1 \neq h_2; \forall h_1\in H
@@ -126,7 +128,7 @@
 			\begin{equation*}
 				\bigwedge\limits_{h_2}^H (\neg A_{h_1} \lor \neg A_{h_2}); h_1 \neq h_2; \forall h_1\in H
 			\end{equation*}
-			\textbf{Un hueco por serpiente}\\\\
+			\textbf{Un hueco por serpiente}\\
 			Otra restricción que nos podemos encontrar es que no puede haber más de una serpiente en el mismo hueco. Para tratar esa restricción se crea la siguiente cláusula en la que están implicadas las serpientes:
 			\begin{equation*}
 				S_{n,h_1} \implies \bigwedge\limits_{h_2}^H \neg S_{n,h_2}; h_1 \neq h_2; \forall h_1\in H; \forall n \in N
@@ -135,7 +137,7 @@
 			\begin{equation*}
 				\bigwedge\limits_{h_2}^H (\neg S_{n,h_1} \lor \neg S_{n,h_2}); h_1 \neq h_2; \forall h_1\in H; \forall n \in N
 			\end{equation*}
-			\textbf{Una serpiente por fila}\\\\
+			\textbf{Una serpiente por fila}\\
 			Otra restricción que nos aparece en el enunciado es que tan solo puede haber una serpiente por fila. Para tratarla hemos llevado a cabo la siguiente cláusula:
 			\begin{equation*}
 				S_{n,h_1} \implies \bigwedge\limits_{h_2}^H \neg S_{m,h_2}; h_1.fila \neq h_2.fila; n \neq m; \forall h_1 \in H; \forall n,m \in N
@@ -144,7 +146,7 @@
 			\begin{equation*}
 				\bigwedge\limits_{h_2}^H (\neg S_{n,h_1} \lor \neg S_{m,h_2}); h_1.fila \neq h_2.fila; n \neq m; \forall h_1 \in H; \forall n,m \in N
 			\end{equation*}
-			\textbf{Columna de la serpiente distinta a la columna de Al}\\\\
+			\textbf{Columna de la serpiente distinta a la columna de Al}\\
 			También nos podemos encontrar otra restricción en el enunciado que nos indica que una serpiente no puede estar en la misma columna que Al. Para ello hemos modelado la siguiente cláusula:
 			\begin{equation*}
 				A_{h_1} \implies \bigwedge\limits_{h_2}^H \neg S_{n,h_2}; h_1.columna = h_2.columna; \forall h_1\in H; \forall n,m \in N
@@ -153,7 +155,7 @@
 			\begin{equation*}
 				\bigwedge\limits_{h_2}^H (\neg A_{h_1} \lor \neg S_{n,h_2}); h_1.columna = h_2.columna; \forall h_1\in H; \forall n,m \in N
 			\end{equation*}
-			\textbf{Fila de la serpiente distinta a la fila de Al}\\\\
+			\textbf{Fila de la serpiente distinta a la fila de Al}\\
 			También nos podemos encontrar otra restricción en el enunciado que nos indica que una serpiente no puede estar en la misma fila que Al. Para ello hemos modelado la siguiente cláusula:
 			\begin{equation*}
 				A_{h_1} \implies \bigwedge\limits_{h_2}^H \neg S_{n,h_2}; h_1.fila = h_2.fila; \forall h_1\in H; \forall n\in N
@@ -162,13 +164,15 @@
 			\begin{equation*}
 				\bigwedge\limits_{h_2}^H (\neg A_{h_1} \lor \neg S_{n,h_2}); h_1.fila = h_2.fila; \forall h_1\in H; \forall n\in N
 			\end{equation*}
-			\textbf{Un único personaje en el mapa}\\\\
+			\textbf{Un único personaje en el mapa}\\
 			Esta restricción no aparece de forma explicita en el enunciado pero es evidente que tan solo puede haber un Al en el mapa de juego, por ello se ha modelizado la siguiente cláusula para controlarlo:
 			\begin{equation*}
 				\bigvee\limits_{h}^H A_h; \forall h \in H
 			\end{equation*}
 			Está es una única cláusula sobre todos los posibles huecos en los que puede estar Al para que tan solo haya un Al en el mapa.
-			\textbf{N serpientes en el mapa}\\\\
+			\\
+			\\
+			\textbf{N serpientes en el mapa}\\
 			Esta restricción no aparece de forma explicita en el enunciado pero es evidente que tan solo puede haber N serpiente en todo el mapa, pare ello se ha modelizado la siguiente cláusula para controlarlo:
 			\begin{equation*}
 				\bigvee\limits_{h}^H S_{n,h} ;\forall h \in H;\forall n \in N
@@ -176,7 +180,7 @@
 			Esta cláusula hace que para las n serpientes se compruebe que no hay más de N serpientes en todo el mapa.
 		
 		\subsection{Evaluación}
-			\begin{tabular}{ |c||c|c|c|p{0.35\linewidth}| }
+			\begin{tabular}{ |c||c|c|c|l| }
 				\hline
 				&\textbf{Tamaño}&\textbf{Serpientes}&\textbf{Tiempo}&\textbf{Resultado}\\
 				\hline
@@ -206,6 +210,8 @@
 				\textbf{Mapa 4}&17x25&8&0.54 s&Se colocan correctamente las serpientes y Al\\
 				\hline
 			\end{tabular}
+			\\
+			\\
 			Con la tabla anterior podemos comprobar que:
 			\begin{itemize}
 				\item Dentro de un mismo mapa a mayor número de serpientes mayor es el tiempo que tarda en encontrar una solución esto es debido a que el número de nodos que tiene que expandir para la búsqueda de la solución es mayor. Este tiempo que tarda en encontrar una solución para un mismo mapa también se ve afectado por el tamaño del mapa puesto que a mayor tamaño mayor es la diferencia de tiempos que podemos encontrar dentro de un mismo mapa debido a que tiene que recorrer más columnas para cumplir con la restricción de que no haya más de una serpiente en la fila y que la serpiente no se encuentre en la misma columna que Al.
@@ -264,32 +270,38 @@
 			De esta forma las acciones y operadores quedarían definidos de la siguiente forma:\\
 			\textbf{Para los movimientos verticales (Arriba y Abajo)}
 			\begin{itemize}
-				\item precondiciones: $(Movimiento(Al) \notin muros, rocas \land Movimiento(Al)\ no\ es$\\$peligroso) \lor (llaves = \emptyset \land Movimiento(Al) = salida)$\\
-				$\implies Al = Movimiento(Al), llaves = llaves\setminus Movimiento(Al)$
+				\item precondiciones: $(Movimiento(Al) \notin muros, rocas \land Movimiento(Al)\ no\ es peligroso) \lor (llaves = \emptyset \land Movimiento(Al) = salida)$\\
+				$\implies Al = Movimiento(Al)$\\
+				$\implies llaves = llaves\setminus Movimiento(Al)$
 				\item precondiciones: $Movimiento(Al) \in rocas \land Movimiento(Movimiento(Al)) \notin rocas, llaves, muros$\\
-				$\implies Al = Movimiento(Al), rocas = rocas\setminus Movimiento(Al), rocas = rocas \cup Movimiento(Movimiento(Al))$
+				$\implies Al = Movimiento(Al)$\\
+				$\implies rocas = rocas\setminus Movimiento(Al)$\\
+				$\implies rocas = rocas \cup Movimiento(Movimiento(Al))$
 			\end{itemize}
 			\textbf{Para los movimientos horizontales (Izquierda y Derecha)}
 			\begin{itemize}
 				\item precondiciones: $Movimiento(Al) \notin muros, rocas \lor (llaves = \emptyset \land Movimiento(Al) = salida)$\\
-				$\implies Al = Movimiento(Al), llaves = llaves\setminus Movimiento(Al)$
+				$\implies Al = Movimiento(Al)$\\
+				$\implies llaves = llaves\setminus Movimiento(Al)$
 				\item precondiciones: $Movimiento(Al) \in rocas \land Movimiento(Movimiento(Al)) \notin rocas, llaves, muros$\\
-				$\implies Al = Movimiento(Al), rocas = rocas\setminus Movimiento(Al), rocas = rocas \cup Movimiento(Movimiento(Al))$
+				$\implies Al = Movimiento(Al)$\\
+				$\implies rocas = rocas\setminus Movimiento(Al)$\\
+				$\implies rocas = rocas \cup Movimiento(Movimiento(Al))$
 			\end{itemize}
 		\subsubsection{Estado Inicial}
 			El estado inicial tiene a Al, las rocas y las llaves\footnote{En nuestra implementación es un conjunto con una posicion por cada llave que hay en el mapa donde esta todo como $\bot$, ya que aun no ha recogido ninguna.} en sus posiciones iniciales.
 		\subsubsection{Estado Final}
 			Dado que limitamos el poder entrar en la casilla de salida para que solo entren si tienen todas las llaves, solo hay que comprobar que el estado este en la misma posicion que la salida para que sea un estado final.
-	\subsection{Analisis}
-		\subsubsection{Casos de prueba}
-		\subsubsection{Comparación de heurísticas}
-			Las dos heurísticas comparten 2 cosas; la funcion que usan para tomar las distancias y el coste que le añade para cubrir las serpientes que estan amenazando directamente a una llave.\\
+		\subsubsection{heuristicas}
+		Las dos heurísticas comparten 2 cosas; la funcion que usan para tomar las distancias y el coste que le añade para cubrir las serpientes que estan amenazando directamente a una llave.\\
+			\\
 			\textbf{Función de las distancias, dist(a,b)}\\
 			Esta funcion es manhattan solo que intenta ser un poco más completa teniendo en cuenta algunos muros. La funcion se queda con el submapa conformado entre los dos puntos a y b entre los que se calcula la distancia y comprube si alguna fila o columna esta rellena por completo de muros. Si alguna fila estaba llena de muros se le suma 2 a la distancia manhattan y lo mismo para las filas. Esto se hace para indicar que Al va a tener que rodear de alguna forma ese muro.
 			\begin{figure}[h!]
-				\includegraphics[width=0.32\linewidth]{Horizontal.png}
-				\includegraphics[width=0.32\linewidth]{Vertical.png}
-				\includegraphics[width=0.32\linewidth]{HorizontalVertical.png}
+				\centering
+				\includegraphics[width=0.2\linewidth]{Horizontal.png}
+				\includegraphics[width=0.2\linewidth]{Vertical.png}
+				\includegraphics[width=0.2\linewidth]{HorizontalVertical.png}
 			\end{figure}
 			\\
 			\textbf{Cubrir Serpientes, cubrir(s,k)}\\
@@ -316,6 +328,7 @@
 			\end{tabular}\\
 			Es decir, para cada piedra calculamos la distacia que habria que moverla para tapar la linea de vision de la serpiente a la llave, si la columna de la piedra esta entre las columnas de la llave y la serpiente solo hay que moverla hacia abajo/arriba y si esta fuera de ese rango, hay que encontrar el camino mas corto para mover la piedra hasta el limite del rango de vision que este mas cerca.\\
 			Y luego lo multiplicamos por 2 para asimilarlo a los costes que se necesitan para moverse. Se usa 2 en vez de 4, que es lo que cuesta mover una roca, porque el coste añadido para mover una roca partiendo de que el movimiento se va a porducir, ya que en las heuristicas se tiene en cuenta movimiento y si aqui se usara 4, se podria estar teniendo en cuenta el coste del movimiento mas de una vez (una para el movimiento de la heuristica y otra para mover la piedra luego algo que tendria coste 4 le asignaria coste 6).\\
+			\\
 			\textbf{Heurística 1}\\
 			Esta heurística calcula la distancia entre al y la llave mas lejana y desde la llave mas lejana hasta la salida, y si no hay llaves es la distancia desde al hasta la salida y luego lo multiplica por 2 ya que para una posicion cuesta 2.\\
 			$dist(al,k_m) = \max\limits_k^{llaves}(dist(al,k))$
@@ -329,7 +342,7 @@
 			\]
 			\\
 			\textbf{Heurística 2}\\
-			Esta heurística es muy parecida a la primera pero en vez de calcular las cosas en torno a al, las calcula en torno a la salida, es decir, primero calcula la distancia hasta la llave que esta mas lejos de la salida y luego, desde esa llave, la distancia hasta al.
+			Esta heurística es muy parecida a la primera pero en vez de calcular las cosas en torno a al, las calcula en torno a la salida, es decir, primero calcula la distancia hasta la llave que esta mas lejos de la salida y luego, desde esa llave, la distancia hasta al.\\
 			$dist(salida,k_m) = \max\limits_k^{llaves}(dist(salida,k))$
 			\[
 			h_2'
@@ -339,6 +352,123 @@
 					$2*dist(salida,al)$ &si no quedan llaves
 				\end{tabular}
 			\]
+	\subsection{Analisis}
+		\subsubsection{Casos de prueba}
+			Para evaluar el funcionamiento, se han usado 6 mapas distintos con las 2 heuristicas implementadas y dijkstra (f() = g()) y se han obtenido los siguientes resultados:\\
+			\begin{center}
+			\begin{tabular}{|c||c|c|c|}
+				\hline
+				\textbf{Mapa}&\textbf{Heuristica}&\textbf{Tiempo}&\textbf{Nodos Expandidos}\\
+				\hline
+				\hline
+				\multirow{3}{*}{\textbf{Mapa 1}} & h1 & 0.001 s & 26\\
+												& h2 & 0.001 s & 26\\
+												& dijkstra & 0.007 s & 112\\
+				\hline
+				\multirow{3}{*}{\textbf{Mapa 2}} & h1 & 0.008 s & 67\\
+												& h2 & 0.001 s & 81\\
+												& dijkstra & 0.625 s & 1 284\\
+				\hline
+				\multirow{3}{*}{\textbf{Mapa 3}} & h1 & 0.021 s & 118\\
+												& h2 & 0.013 s & 80\\
+												& dijkstra & 501.141 s & 26 310\\
+				\hline
+				\multirow{3}{*}{\textbf{Mapa 4}} & h1 & 1.673 s & 2 478\\
+												& h2 & 1.755 s & 2 510\\
+												& dijkstra & 2.409 s & 2 806\\
+				\hline
+				\multirow{3}{*}{\textbf{Mapa 5}} & h1 & 34.702 s & 8 554\\
+												& h2 & 29.857 s & 8 626\\
+												& dijkstra & 60.447 s & 10 775\\
+				\hline
+				\multirow{3}{*}{\textbf{Mapa 6}} & h1 & 58.091 s & 9 097\\
+												& h2 & 58.308 s & 9 251\\
+												& dijkstra & 68 613.146 s & 110 372\\
+				\hline
+			\end{tabular}
+			\end{center}
+			En todos los problemas, el entorno se comporta como esperado, y se alcanza una solución óptima.
+			\\
+			Lo primero de todo, analizemos la complejidad para cada mapa, segun los huecos que hay libres en cada mapa y el número de rocas y llaves el número de posibles estados es el siguiente\footnote{Para el mapa 4 no se usa  la formula ya que la roca se puede ver claramente que solo puede estar en 6 posiciones}:
+			$$
+			nº\ estados\footnote{Realmente este no es el número real de estados, es una aproximación ya que con esta aproximacion se tiene en cuenta estados adicionales como una llave y una roca estando en el mismo sitio o al estando en una posición amenazada por una serpiente, pero es suficientemente aproximada como para hacernos una idea} = \frac{H!}{(H-(R+1))!}*2^k
+			$$
+			\begin{tabular}{ll}
+				H &: número de huecos (incluyendo las posiciones de las rocas y de al)\\
+				R &: número de rocas\\
+				k &: número de llaves\\
+			\end{tabular}
+			\\
+			Basandonos en esta formula obtenemos los siguientes números:
+			\begin{center}
+			\begin{tabular}{|c||c|c|c|c|c|c|c|}
+				\hline
+				&\textbf{H}&\textbf{R}&\textbf{k}&\pmb{$\frac{H!}{(H-(R+1))!}$}&\pmb{$2^k$}&\textbf{nº estados}\\
+				\hline
+				\hline
+				\textbf{Mapa 1} & 23 & 1 & 1 & 506 & 2 & 1 012\\
+				\hline
+				\textbf{Mapa 2} & 43 & 1 & 2 & 1 806 & 4 & 7 224\\
+				\hline
+				\textbf{Mapa 3} & 109 & 2 & 2 & 1 259 604 & 4 & 5 038 416\\
+				\hline
+				\textbf{Mapa 4} & 83 & 1 & 3 & 498 & 8 & 3 984\\
+				\hline
+				\textbf{Mapa 5} & 39 & 2 & 2 & 54 834 & 4 & 219 336\\
+				\hline
+				\textbf{Mapa 6} & 78 & 2 & 4 & 456 456 & 16 & 7 303 296\\
+				\hline
+			\end{tabular}
+			\end{center}
+			Observando en esto se pueden ver ver varias cosas:\\
+			\begin{itemize}
+				\item La complejidad del problema crece principalmente con el número de huecos, piedras y llaves en ese orden de impacto.
+				\item La salida crea una especie de muro invisible ya que en cuanto se tengan todas las llaves, suponiendo un espacio abierto, nunca se va a usar la parte del lado contrario del muro porque se llegará primero a la salida, esto se puede ver facilmente en el primer mapa ya que todos los elementos relevantes estan a la izquierda de la salida asi que si reducimos nuestros posibles estados eliminando los huecos de la parte de la derecha nos quedaría como número de posibles estados 312 que se acerca mucho más a la realidad que el 1012 estimado anteriormente luego, cuanto más cerca este la salida de los elementos pertinentes en el mapa, principalmente las llaves, antes se va a encontrar la salida, y se van a expandir menos nodos.
+				\item El mapa 4 limita mucho los descendientes que se pueden crear, por ello la estimación que hemos hecho es muy similar a la expansion de nodos que hace una busqueda de fuerza bruta.
+				\item La busqueda por fuerza bruta en el mapa 3 y 6 expande significantemente menos nodos que los que el numero de nodos estimados, eso es porque estos mapas contienen 2 serpientes y las serpientes hacen que muchos nodos no sean posibles y limita los sucesores que algunos nodos generan eliminando los posibles huecos que puede haber para al, luego, si aumenta el numero de serpientes la complejidad del problema disminuye siempre que siga siendo satisfacible y no aumente el numero de rocas.
+			\end{itemize}
+			Los mapas con los que se ha hecho el analisis han sido anexados a la entrega y son:\\
+			\begin{figure}[H]
+				\begin{subfigure}[b]{0.29\linewidth}
+					\includegraphics[width=\linewidth]{astar/lab1.png}
+					\caption{Mapa 1}
+				\end{subfigure}
+				\begin{subfigure}[b]{0.29\linewidth}
+					\includegraphics[width=\linewidth]{astar/lab2.png}
+					\caption{Mapa 2}
+				\end{subfigure}
+				\begin{subfigure}[b]{0.41\linewidth}
+					\includegraphics[width=\linewidth]{astar/lab3.png}
+					\caption{Mapa 3}
+				\end{subfigure}
+				\begin{subfigure}[b]{0.36\linewidth}
+					\includegraphics[width=\linewidth]{astar/lab4.png}
+					\caption{Mapa 4}
+				\end{subfigure}
+				\begin{subfigure}[b]{0.24\linewidth}
+					\includegraphics[width=\linewidth]{astar/lab5.png}
+					\caption{Mapa 5}
+				\end{subfigure}
+				\begin{subfigure}[b]{0.39\linewidth}
+					\includegraphics[width=\linewidth]{astar/lab6.png}
+					\caption{Mapa 6}
+				\end{subfigure}
+			\end{figure}
+			
+		\subsubsection{Comparación de heurísticas}
+	\section{Parte extra}
+	\section{Notas sobre el código}
+	\begin{itemize}
+		\item Para todas las partes se ha incluido un arhivo bash script llamado run.sh que se encarga de llamar al archivo correspondiente con el compilador/interprete necesario.
+		\begin{itemize}
+			\item parte 1: ./run.sh <laberinto>\ <n>
+			\item parte 2 y opcional: ./run.sh <laberinto>\ <heuristica>
+		\end{itemize}
+		\item Para la parte de busqueda se ha implementado una pequeña interfaz que por defecto no esta activada, para activarla hay que cambiar el valor con el nombre de "interfaz" a True en el archivo config.py
+		\item 
+	\end{itemize}
+	
+
 %------------------------------------------------------------------------------------------
 
 \end{document}
