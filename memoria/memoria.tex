@@ -457,6 +457,56 @@
 			
 		\subsubsection{Comparación de heurísticas}
 	\section{Parte extra}
+	Para añadir la parte adicional se han tenido que añadir movimientos en la parte de acciones y operadores y se ha cambiado una parte de las heuristicas.
+		\subsection{Acciones y operadores}
+			Ahora al puede hacer 4 movimientos adicionales cada uno descrito de la siguiente forma:
+			\begin{itemize}
+				\item arriba izquierda: (-1,-1)
+				\item arriba derecha: (-1,1)
+				\item abajo izquierda: (1,-1)
+				\item abajo derecha: (-1,-1)
+			\end{itemize}
+			Y los operadores quedarian descritos como:
+			\begin{itemize}
+				\item precondiciones: $Movimiento(Al) \notin muros, rocas \land \neg((al_{fila},Movimiento(Al)_{columna}) \in muros \lor rocas  \land (Movimiento(al)_{fila},Al_{columna}) \in muros \lor rocas)\lor (llaves = \emptyset \land Movimiento(Al) = salida)$\\
+				$\implies Al = Movimiento(Al)$\\
+				$\implies llaves = llaves\setminus Movimiento(Al)$
+			\end{itemize}
+		\subsection{Heuristicas}
+			Los cambios aqui han sido cambiar la funcion de distancias por:\\
+			$$\min(f,c)-1 + \mid f-c\mid$$
+			f: numero de filas entre las 2 posiciones\\
+			c: numero de columnas entre las 2 posiciones\\
+			\\
+			Y en la funcion para calcular la distancia para mover las rocas se ha cambiado a la distancia manhattan (ya que nopuedes mover las rocas diagonalmente).\\
+		\subsection{Analisis}
+		\begin{center}
+			\begin{tabular}{|c||c|c|c|}
+				\hline
+				\textbf{Mapa}&\textbf{Heuristica}&\textbf{Tiempo}&\textbf{Nodos Expandidos}\\
+				\hline
+				\hline
+				\multirow{3}{*}{\textbf{Mapa 1}} & h1 & 0.002 s & 27\\
+												& h2 & 0.002 s & 27\\
+				\hline
+				\multirow{3}{*}{\textbf{Mapa 2}} & h1 & 0.014 s & 73\\
+												& h2 & 0.011 s & 61\\
+				\hline
+				\multirow{3}{*}{\textbf{Mapa 3}} & h1 & 0.835 s & 792\\
+												& h2 & 1.982 s & 1 292\\
+				\hline
+				\multirow{3}{*}{\textbf{Mapa 4}} & h1 & 5.451 s & 4 010\\
+												& h2 & 6.844 s & 4 379\\
+				\hline
+				\multirow{3}{*}{\textbf{Mapa 5}} & h1 & 642.194 s & 25 256\\
+												& h2 & 673.194 s & 25 256\\
+				\hline
+				\multirow{3}{*}{\textbf{Mapa 6}} & h1 & 58.091 s & 9 097\\
+												& h2 & 58.308 s & 9 251\\
+				\hline
+			\end{tabular}
+		\end{center}
+		Como se puede ver, para todos los casos se tarda más, esto es porque al haber mas posibles acciones, hay mas sucesores, muchos de los cuales se repiten, y tiene que estar haciendo muchas comprobaciones sobre cerrada y abierta para ver si cada uno de los nodos esta, ademas de calcular la heuristica varias veces mas para un mismo nodo.
 	\section{Notas sobre el código}
 	\begin{itemize}
 		\item Para todas las partes se ha incluido un arhivo bash script llamado run.sh que se encarga de llamar al archivo correspondiente con el compilador/interprete necesario.
@@ -464,8 +514,7 @@
 			\item parte 1: ./run.sh <laberinto>\ <n>
 			\item parte 2 y opcional: ./run.sh <laberinto>\ <heuristica>
 		\end{itemize}
-		\item Para la parte de busqueda se ha implementado una pequeña interfaz que por defecto no esta activada, para activarla hay que cambiar el valor con el nombre de "interfaz" a True en el archivo config.py. Para que funcione hay que tener instalada la version de pygame para python3
-		\item 
+		\item Para la parte de busqueda se ha implementado una pequeña interfaz que por defecto no esta activada, para activarla hay que cambiar el valor con el nombre de ''interfaz'' a True en el archivo config.py. Para que funcione hay que tener instalada la version de pygame para python 3.6.7
 	\end{itemize}
 	
 
